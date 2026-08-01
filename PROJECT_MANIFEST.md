@@ -205,6 +205,8 @@
 - `clients/apps/desktop/test/validation.test.mjs`
 - `clients/apps/desktop/tsconfig.json`
 - `clients/apps/mobile/.eslintrc.js`
+- `clients/apps/mobile/.expo/cache/eslint/.cache_1bk97bn`
+- `clients/apps/mobile/.expo/dev/logs/export.log`
 - `clients/apps/mobile/README.md`
 - `clients/apps/mobile/app.json`
 - `clients/apps/mobile/app/_layout.tsx`
@@ -214,7 +216,7 @@
 - `clients/apps/mobile/expo-env.d.ts`
 - `clients/apps/mobile/metro.config.js`
 - `clients/apps/mobile/package.json`
-- `clients/apps/mobile/src/app/README.md`
+- `clients/apps/mobile/src/APP_ARCHITECTURE.md`
 - `clients/apps/mobile/src/components/avatar/README.md`
 - `clients/apps/mobile/src/components/composer/README.md`
 - `clients/apps/mobile/src/components/message-bubbles/README.md`
@@ -246,8 +248,10 @@
 - `clients/apps/mobile/src/screens/profile/README.md`
 - `clients/apps/mobile/src/screens/rooms/README.md`
 - `clients/apps/mobile/src/screens/settings/README.md`
+- `clients/apps/mobile/src/session/mobile-session.ts`
 - `clients/apps/mobile/src/store/README.md`
 - `clients/apps/mobile/src/theme/README.md`
+- `clients/apps/mobile/test/mobile-session.test.mjs`
 - `clients/apps/mobile/tsconfig.json`
 - `clients/apps/web/README.md`
 - `clients/apps/web/index.html`

@@ -21,7 +21,8 @@ Trạng thái dưới đây phản ánh lần xác minh cục bộ ngày 2026-08
 - Attachment message dùng text envelope tương thích ngược, chưa có attachment message contract riêng trong domain.
 - Renderer production bundle khoảng 556 KB và chưa code-split.
 - Voice/video, rooms, macOS và Linux packaging ngoài phạm vi Yahoo-core Windows.
-- Mobile, permission admin chi tiết, Web timeline virtualization và operational telemetry vẫn cần milestone riêng.
+- Mobile đã có secure session và Expo SDK 57 nhưng chưa hoàn tất SQLite account isolation, durable outbox, SignalR foreground và push background. Audit production còn một finding moderate trong tool Xcode; finding low còn lại thuộc ESLint workspace.
+- Permission admin chi tiết, Web timeline virtualization và operational telemetry vẫn cần milestone riêng.
 
 ## Hệ quả phát hành
 

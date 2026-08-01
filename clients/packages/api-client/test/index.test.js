@@ -28,6 +28,7 @@ describe("RetroApiClient", () => {
     assert.strictEqual(typeof client.login, "function");
     assert.strictEqual(typeof client.register, "function");
     assert.strictEqual(typeof client.logout, "function");
+    assert.strictEqual(typeof client.restoreSession, "function");
     assert.strictEqual(typeof client.getAdminOverview, "function");
     assert.strictEqual(typeof client.listAdminUsers, "function");
     assert.strictEqual(typeof client.setAdminUserSuspension, "function");
@@ -108,6 +109,54 @@ describe("RetroApiClient", () => {
     }
   });
 
+  it("restores a persisted refresh token and keeps it across a transient network failure", async () => {
+    const originalFetch = globalThis.fetch;
+    let attempts = 0;
+    globalThis.fetch = async (_url, init = {}) => {
+      attempts += 1;
+      assert.deepStrictEqual(JSON.parse(init.body), {
+        refreshToken: "persisted-refresh",
+      });
+      if (attempts === 1) throw new TypeError("network unavailable");
+      return jsonResponse({
+        ...authResponse,
+        accessToken: "restored-access",
+        refreshToken: "rotated-refresh",
+      });
+    };
+
+    try {
+      const client = new RetroApiClient("http://localhost:5000");
+      await assert.rejects(
+        client.restoreSession("persisted-refresh"),
+        /network unavailable/,
+      );
+      const restored = await client.refreshSession();
+
+      assert.strictEqual(restored.refreshToken, "rotated-refresh");
+      assert.strictEqual(client.getAccessToken(), "restored-access");
+      assert.strictEqual(attempts, 2);
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
+  it("clears a rejected persisted refresh token", async () => {
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = async () => jsonResponse({ error: "invalid" }, 401);
+
+    try {
+      const client = new RetroApiClient("http://localhost:5000");
+      await assert.rejects(client.restoreSession("rejected-refresh"), {
+        name: "RetroApiError",
+        status: 401,
+      });
+      await assert.rejects(client.refreshSession(), /No refresh token/);
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
   it("revokes the current refresh token and always clears local tokens on logout", async () => {
     const originalFetch = globalThis.fetch;
     const requests = [];
@@ -126,10 +175,12 @@ describe("RetroApiClient", () => {
       await client.login("retro", "secret");
       await client.logout();
 
-      assert.deepStrictEqual(requests, [{
-        path: "/api/v1/auth/logout",
-        body: { refreshToken: "refresh-one" },
-      }]);
+      assert.deepStrictEqual(requests, [
+        {
+          path: "/api/v1/auth/logout",
+          body: { refreshToken: "refresh-one" },
+        },
+      ]);
       assert.strictEqual(client.getAccessToken(), "");
     } finally {
       globalThis.fetch = originalFetch;

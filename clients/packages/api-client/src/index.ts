@@ -18,6 +18,23 @@ import type {
   SessionDto,
 } from "@retro/contracts";
 
+export class RetroApiError extends Error {
+  public readonly status: number;
+
+  public constructor(status: number, message: string) {
+    super(message);
+    this.name = "RetroApiError";
+    this.status = status;
+  }
+}
+
+export function isRefreshTokenRejected(error: unknown): boolean {
+  return (
+    error instanceof RetroApiError &&
+    (error.status === 400 || error.status === 401 || error.status === 403)
+  );
+}
+
 export class RetroApiClient {
   private readonly baseUrl: string;
   private accessToken: string | null = null;
@@ -50,7 +67,10 @@ export class RetroApiClient {
 
     if (!response.ok) {
       const body = await response.text();
-      throw new Error(`API ${response.status}: ${body || response.statusText}`);
+      throw new RetroApiError(
+        response.status,
+        `API ${response.status}: ${body || response.statusText}`,
+      );
     }
 
     return (await response.json()) as T;
@@ -106,9 +126,17 @@ export class RetroApiClient {
       this.setSession(response);
       return response;
     } catch (error) {
-      this.clearSession();
+      if (isRefreshTokenRejected(error)) this.clearSession();
       throw error;
     }
+  }
+
+  public restoreSession(refreshToken: string): Promise<AuthResponse> {
+    if (!refreshToken.trim()) {
+      throw new Error("A refresh token is required to restore the session.");
+    }
+    this.refreshToken = refreshToken;
+    return this.refreshSession();
   }
 
   public getAccessToken(): string {
