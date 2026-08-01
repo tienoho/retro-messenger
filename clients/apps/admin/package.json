@@ -13,7 +13,7 @@
   "dependencies": {
     "@retro/api-client": "workspace:*",
     "@retro/contracts": "workspace:*",
-    "antd": "5.22.6",
+    "antd": "6.5.2",
     "@ant-design/icons": "5.5.2",
     "react": "19.0.0",
     "react-dom": "19.0.0"
