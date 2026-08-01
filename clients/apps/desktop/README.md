@@ -6,8 +6,8 @@
 
 - API mặc định: `http://localhost:5080`; đặt `RETRO_API_URL` cho endpoint HTTPS khác.
 - `pnpm --filter @retro/desktop typecheck`
-- `pnpm --filter @retro/desktop test`
 - `pnpm --filter @retro/desktop build`
+- `pnpm --filter @retro/desktop test`
 - `pnpm --filter @retro/desktop test:electron`
 - `pnpm --filter @retro/desktop package:win` tạo NSIS x64. Bản local không có PFX sẽ là unsigned và không được coi là production release.
 

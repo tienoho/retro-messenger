@@ -54,8 +54,8 @@ jobs:
             throw "Kênh stable không chấp nhận SemVer prerelease."
           }
       - run: pnpm --filter @retro/desktop typecheck
-      - run: pnpm --filter @retro/desktop test
       - run: pnpm --filter @retro/desktop build
+      - run: pnpm --filter @retro/desktop test
       - run: pnpm --filter @retro/desktop test:electron
       - name: Đóng gói và ký NSIS x64
         shell: pwsh

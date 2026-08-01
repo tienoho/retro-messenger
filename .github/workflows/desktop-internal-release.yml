@@ -65,8 +65,8 @@ jobs:
           "TEST_CERT_THUMBPRINT=$($certificate.Thumbprint)" >> $env:GITHUB_ENV
 
       - run: pnpm --filter @retro/desktop typecheck
-      - run: pnpm --filter @retro/desktop test
       - run: pnpm --filter @retro/desktop build
+      - run: pnpm --filter @retro/desktop test
       - run: pnpm --filter @retro/desktop test:electron
 
       - name: Package signed NSIS x64 installer
