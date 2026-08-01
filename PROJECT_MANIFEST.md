@@ -196,6 +196,7 @@
 - `clients/apps/desktop/src/shared/ipc-contracts.ts`
 - `clients/apps/desktop/test/database.test.mjs`
 - `clients/apps/desktop/test/electron-renderer-smoke.mjs`
+- `clients/apps/desktop/test/live-backend-e2e.mjs`
 - `clients/apps/desktop/test/outbox-processor.test.mjs`
 - `clients/apps/desktop/test/preload-path.test.mjs`
 - `clients/apps/desktop/test/realtime-coordinator.test.mjs`

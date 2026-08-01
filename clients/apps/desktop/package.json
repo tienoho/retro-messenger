@@ -12,6 +12,7 @@
     "typecheck": "tsc --noEmit",
     "test": "node --test test/*.test.mjs",
     "test:electron": "electron test/electron-renderer-smoke.mjs",
+    "test:live": "node test/live-backend-e2e.mjs",
     "lint": "echo desktop:lint",
     "icon:generate": "node scripts/generate-icon.mjs",
     "package:win": "pnpm icon:generate && pnpm build && electron-builder --win nsis --x64"
