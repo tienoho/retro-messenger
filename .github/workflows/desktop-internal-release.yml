@@ -141,5 +141,7 @@ jobs:
               Remove-Item -LiteralPath "Cert:\CurrentUser\$store\$env:TEST_CERT_THUMBPRINT" -Force -ErrorAction SilentlyContinue
             }
           }
-          Remove-Item -LiteralPath $env:TEST_PFX_PATH -Force -ErrorAction SilentlyContinue
+          if (-not [string]::IsNullOrWhiteSpace($env:TEST_PFX_PATH)) {
+            Remove-Item -LiteralPath $env:TEST_PFX_PATH -Force -ErrorAction SilentlyContinue
+          }
           Remove-Item -LiteralPath (Join-Path $env:RUNNER_TEMP "retro-messenger-internal-test.cer") -Force -ErrorAction SilentlyContinue

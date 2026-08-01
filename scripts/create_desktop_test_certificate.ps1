@@ -13,6 +13,8 @@ $password = [Convert]::ToBase64String($passwordBytes)
 $securePassword = ConvertTo-SecureString $password -AsPlainText -Force
 $pfxPath = Join-Path $env:TEMP "retro-messenger-internal-$([guid]::NewGuid().ToString('N')).pfx"
 $cerPath = [IO.Path]::ChangeExtension($pfxPath, ".cer")
+$base64SecretPath = [IO.Path]::ChangeExtension($pfxPath, ".base64.txt")
+$passwordSecretPath = [IO.Path]::ChangeExtension($pfxPath, ".password.txt")
 $certificate = $null
 
 try {
@@ -47,12 +49,32 @@ try {
     }
 
     if (-not $SkipGitHubSecrets) {
-        [Convert]::ToBase64String([IO.File]::ReadAllBytes($pfxPath)) |
-            gh secret set WINDOWS_TEST_PFX_BASE64 --repo $Repository
-        if ($LASTEXITCODE -ne 0) { throw "Could not set WINDOWS_TEST_PFX_BASE64." }
+        $ascii = [Text.ASCIIEncoding]::new()
+        [IO.File]::WriteAllText(
+            $base64SecretPath,
+            [Convert]::ToBase64String([IO.File]::ReadAllBytes($pfxPath)),
+            $ascii
+        )
+        [IO.File]::WriteAllText($passwordSecretPath, $password, $ascii)
 
-        $password | gh secret set WINDOWS_TEST_PFX_PASSWORD --repo $Repository
-        if ($LASTEXITCODE -ne 0) { throw "Could not set WINDOWS_TEST_PFX_PASSWORD." }
+        $gh = (Get-Command gh -ErrorAction Stop).Source
+        $base64Upload = Start-Process `
+            -FilePath $gh `
+            -ArgumentList @("secret", "set", "WINDOWS_TEST_PFX_BASE64", "--repo", $Repository) `
+            -RedirectStandardInput $base64SecretPath `
+            -WindowStyle Hidden `
+            -Wait `
+            -PassThru
+        if ($base64Upload.ExitCode -ne 0) { throw "Could not set WINDOWS_TEST_PFX_BASE64." }
+
+        $passwordUpload = Start-Process `
+            -FilePath $gh `
+            -ArgumentList @("secret", "set", "WINDOWS_TEST_PFX_PASSWORD", "--repo", $Repository) `
+            -RedirectStandardInput $passwordSecretPath `
+            -WindowStyle Hidden `
+            -Wait `
+            -PassThru
+        if ($passwordUpload.ExitCode -ne 0) { throw "Could not set WINDOWS_TEST_PFX_PASSWORD." }
     }
 
     [pscustomobject]@{
@@ -68,6 +90,8 @@ finally {
     }
     Remove-Item -LiteralPath $pfxPath -Force -ErrorAction SilentlyContinue
     Remove-Item -LiteralPath $cerPath -Force -ErrorAction SilentlyContinue
+    Remove-Item -LiteralPath $base64SecretPath -Force -ErrorAction SilentlyContinue
+    Remove-Item -LiteralPath $passwordSecretPath -Force -ErrorAction SilentlyContinue
     [Array]::Clear($passwordBytes, 0, $passwordBytes.Length)
     $password = $null
     $securePassword = $null
