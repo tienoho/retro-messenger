@@ -1,0 +1,7 @@
+---
+description: Electron desktop safety and architecture rules
+globs: clients/apps/desktop/**
+alwaysApply: false
+---
+
+Keep main, preload, and renderer separated. nodeIntegration is false. IPC is typed, whitelisted, and validated. SQLite and token protection live outside renderer. Test deep links, tray, windows, updates, and Buzz focus behavior.

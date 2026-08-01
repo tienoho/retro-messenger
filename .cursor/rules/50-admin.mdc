@@ -1,0 +1,7 @@
+---
+description: Admin authorization, moderation, and audit rules
+globs: clients/apps/admin/**
+alwaysApply: false
+---
+
+Use admin-specific APIs. Sensitive actions require explicit permission, reason, scope, confirmation, and audit. Do not create generic delete flows for protected resources. Minimize exposed personal data.

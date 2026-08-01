@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>RetroMessenger.SmokeTests</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/RetroMessenger.Domain/RetroMessenger.Domain.csproj" />
+    <ProjectReference Include="../../src/RetroMessenger.Application/RetroMessenger.Application.csproj" />
+    <ProjectReference Include="../../src/RetroMessenger.Infrastructure/RetroMessenger.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>

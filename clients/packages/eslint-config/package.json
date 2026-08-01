@@ -1,0 +1,16 @@
+{
+  "name": "@retro/eslint-config",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./index.js",
+  "peerDependencies": {
+    "eslint": ">=9"
+  },
+  "scripts": {
+    "build": "node --check index.js",
+    "typecheck": "echo no-types",
+    "test": "node --test",
+    "lint": "node --check index.js"
+  }
+}

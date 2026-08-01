@@ -1,0 +1,22 @@
+{
+  "expo": {
+    "name": "Retro Messenger",
+    "slug": "retro-messenger",
+    "scheme": "retro-messenger",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-sqlite"
+    ],
+    "ios": {
+      "bundleIdentifier": "com.example.retromessenger"
+    },
+    "android": {
+      "package": "com.example.retromessenger"
+    }
+  }
+}

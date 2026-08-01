@@ -1,0 +1,8 @@
+/AGENTS.md @architecture-team
+/src/ @backend-team
+/clients/apps/web/ @frontend-team
+/clients/apps/desktop/ @desktop-team
+/clients/apps/mobile/ @mobile-team
+/clients/apps/admin/ @admin-team
+/deploy/ @platform-team
+/docs/security/ @security-team

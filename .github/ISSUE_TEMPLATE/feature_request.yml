@@ -1,0 +1,23 @@
+name: Feature request
+description: Đề xuất tính năng có acceptance criteria
+title: "[Feature] "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Vấn đề cần giải quyết
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Hành vi mong muốn
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+    validations:
+      required: true

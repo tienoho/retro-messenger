@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta
+    name="viewport"
+    content="width=device-width,initial-scale=1"
+  >
+  <title>Retro Messenger Demo</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <main class="app">
+    <aside>
+      <div class="profile">
+        <div class="logo">R</div>
+        <div>
+          <strong>Retro Messenger</strong>
+          <small>● Online</small>
+        </div>
+      </div>
+
+      <input placeholder="Tìm bạn bè...">
+
+      <button class="contact active">
+        <span>●</span>
+        <div>
+          <strong>Hồng Anh</strong>
+          <small>Demo realtime</small>
+        </div>
+      </button>
+
+      <div class="note">
+        Zero-dependency demo<br>
+        Node.js + REST + SSE
+      </div>
+    </aside>
+
+    <section>
+      <header>
+        <div>
+          <strong>Hồng Anh</strong>
+          <small>Online</small>
+        </div>
+        <div>☎︎　◉　⋯</div>
+      </header>
+
+      <div
+        id="messages"
+        class="messages"
+      ></div>
+
+      <form id="composer">
+        <button
+          type="button"
+          id="buzz"
+        >
+          ⚡
+        </button>
+        <textarea
+          id="input"
+          placeholder="Nhập tin nhắn..."
+          required
+        ></textarea>
+        <button class="send">Gửi</button>
+      </form>
+    </section>
+  </main>
+
+  <script
+    type="module"
+    src="/app.js"
+  ></script>
+</body>
+</html>

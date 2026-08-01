@@ -1,0 +1,111 @@
+name: Desktop Windows release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Git tag, phải khớp v<desktop package version>"
+        required: true
+        type: string
+      channel:
+        description: "Kênh phát hành"
+        required: true
+        default: beta
+        type: choice
+        options: [beta, stable]
+
+permissions:
+  contents: write
+
+jobs:
+  build-sign-publish:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: clients
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+          cache-dependency-path: clients/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - name: Kiểm tra version và signing secrets
+        shell: pwsh
+        env:
+          WINDOWS_PFX_BASE64: ${{ secrets.WINDOWS_PFX_BASE64 }}
+          WINDOWS_PFX_PASSWORD: ${{ secrets.WINDOWS_PFX_PASSWORD }}
+          RELEASE_TAG: ${{ inputs.tag }}
+          RELEASE_CHANNEL: ${{ inputs.channel }}
+        run: |
+          $version = (Get-Content apps/desktop/package.json -Raw | ConvertFrom-Json).version
+          if ($env:RELEASE_TAG -ne "v$version") { throw "Tag phải là v$version." }
+          if ([string]::IsNullOrWhiteSpace($env:WINDOWS_PFX_BASE64) -or [string]::IsNullOrWhiteSpace($env:WINDOWS_PFX_PASSWORD)) {
+            throw "Stable/beta release yêu cầu WINDOWS_PFX_BASE64 và WINDOWS_PFX_PASSWORD."
+          }
+          if ($env:RELEASE_CHANNEL -eq "beta" -and $version -notmatch '-') {
+            throw "Kênh beta yêu cầu SemVer prerelease, ví dụ 0.2.0-beta.1."
+          }
+          if ($env:RELEASE_CHANNEL -eq "stable" -and $version -match '-') {
+            throw "Kênh stable không chấp nhận SemVer prerelease."
+          }
+      - run: pnpm --filter @retro/desktop typecheck
+      - run: pnpm --filter @retro/desktop test
+      - run: pnpm --filter @retro/desktop build
+      - run: pnpm --filter @retro/desktop test:electron
+      - name: Đóng gói và ký NSIS x64
+        shell: pwsh
+        env:
+          WINDOWS_PFX_BASE64: ${{ secrets.WINDOWS_PFX_BASE64 }}
+          CSC_KEY_PASSWORD: ${{ secrets.WINDOWS_PFX_PASSWORD }}
+        run: |
+          $certificate = Join-Path $env:RUNNER_TEMP "retro-messenger-signing.pfx"
+          [IO.File]::WriteAllBytes($certificate, [Convert]::FromBase64String($env:WINDOWS_PFX_BASE64))
+          try {
+            $env:CSC_LINK = $certificate
+            $repository = $env:GITHUB_REPOSITORY.Split('/')
+            pnpm --filter @retro/desktop icon:generate
+            pnpm --filter @retro/desktop build
+            pnpm --filter @retro/desktop exec electron-builder --win nsis --x64 --config.publish.owner=$($repository[0]) --config.publish.repo=$($repository[1])
+          } finally {
+            Remove-Item -LiteralPath $certificate -Force -ErrorAction SilentlyContinue
+          }
+      - name: Xác minh chữ ký, checksum và SBOM
+        shell: pwsh
+        run: |
+          $installer = Get-ChildItem apps/desktop/release -Filter "Retro-Messenger-*.exe" | Select-Object -First 1
+          if ($null -eq $installer) { throw "Không tìm thấy installer." }
+          $signature = Get-AuthenticodeSignature -LiteralPath $installer.FullName
+          if ($signature.Status -ne "Valid") { throw "Chữ ký Authenticode không hợp lệ: $($signature.Status)" }
+          Get-FileHash -Algorithm SHA256 -LiteralPath $installer.FullName |
+            ForEach-Object { "$($_.Hash.ToLowerInvariant())  $($installer.Name)" } |
+            Set-Content apps/desktop/release/SHA256SUMS.txt -Encoding ascii
+          pnpm licenses list --json | Set-Content apps/desktop/release/sbom-licenses.json -Encoding utf8
+      - uses: actions/upload-artifact@v4
+        with:
+          name: retro-messenger-windows-${{ inputs.channel }}
+          path: |
+            clients/apps/desktop/release/*.exe
+            clients/apps/desktop/release/*.blockmap
+            clients/apps/desktop/release/*.yml
+            clients/apps/desktop/release/SHA256SUMS.txt
+            clients/apps/desktop/release/sbom-licenses.json
+      - name: Tạo GitHub Release sau mọi gate
+        shell: pwsh
+        working-directory: .
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.tag }}
+          RELEASE_CHANNEL: ${{ inputs.channel }}
+        run: |
+          $assets = Get-ChildItem clients/apps/desktop/release -File |
+            Where-Object { $_.Extension -in ".exe", ".blockmap", ".yml", ".txt", ".json" } |
+            ForEach-Object { $_.FullName }
+          if ($assets.Count -eq 0) { throw "Không có release asset." }
+          $arguments = @("release", "create", $env:RELEASE_TAG) + $assets + @("--generate-notes", "--title", "Retro Messenger $env:RELEASE_TAG")
+          if ($env:RELEASE_CHANNEL -eq "beta") { $arguments += "--prerelease" }
+          gh @arguments

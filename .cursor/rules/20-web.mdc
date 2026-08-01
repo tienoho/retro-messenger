@@ -1,0 +1,7 @@
+---
+description: React web and shared chat client rules
+globs: clients/apps/web/**,clients/packages/web-ui/**,clients/packages/chat-core/**
+alwaysApply: false
+---
+
+Use generated API contracts. TanStack Query owns server state, Zustand owns UI state, IndexedDB owns durable chat cache/outbox/cursor. Reconnect triggers sync. Virtualize long lists and support keyboard/accessibility.

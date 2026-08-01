@@ -1,0 +1,7 @@
+---
+description: Core architecture and repository-wide constraints
+globs:
+alwaysApply: true
+---
+
+Follow @AGENTS.md and @docs/PROJECT_CONTEXT.md. PostgreSQL is the source of truth. SignalR and Redis are not message stores. Do not broadcast before commit. Preserve module boundaries, idempotency, conversation sequence, client outbox, and cursor sync. Avoid new infrastructure unless an accepted ADR requires it.

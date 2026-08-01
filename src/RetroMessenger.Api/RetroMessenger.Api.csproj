@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <RootNamespace>RetroMessenger.Api</RootNamespace>
+  </PropertyGroup>
+    <ItemGroup>
+      <PackageReference Include="OpenIddict.AspNetCore" />
+      <PackageReference Include="OpenIddict.Server.AspNetCore" />
+    </ItemGroup>
+    <ItemGroup>
+      <ProjectReference Include="../RetroMessenger.Domain/RetroMessenger.Domain.csproj" />
+    <ProjectReference Include="../RetroMessenger.Contracts/RetroMessenger.Contracts.csproj" />
+    <ProjectReference Include="../RetroMessenger.Application/RetroMessenger.Application.csproj" />
+    <ProjectReference Include="../RetroMessenger.Infrastructure/RetroMessenger.Infrastructure.csproj" />
+    <ProjectReference Include="../RetroMessenger.ServiceDefaults/RetroMessenger.ServiceDefaults.csproj" />
+  </ItemGroup>
+</Project>

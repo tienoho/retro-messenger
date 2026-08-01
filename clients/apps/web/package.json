@@ -1,0 +1,31 @@
+{
+  "name": "@retro/web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port 5173",
+    "build": "tsc --noEmit && vite build",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "lint": "echo web:lint"
+  },
+  "dependencies": {
+    "@microsoft/signalr": "8.0.7",
+    "@retro/api-client": "workspace:*",
+    "@retro/chat-core": "workspace:*",
+    "@retro/contracts": "workspace:*",
+    "@retro/design-tokens": "workspace:*",
+    "@retro/realtime-client": "workspace:*",
+    "react": "19.0.0",
+    "react-dom": "19.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "19.0.2",
+    "@types/react-dom": "19.0.2",
+    "@vitejs/plugin-react": "4.3.4",
+    "vite": "6.0.5",
+    "vitest": "2.1.8",
+    "typescript": "5.7.2"
+  }
+}

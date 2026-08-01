@@ -1,0 +1,7 @@
+---
+description: React Native lifecycle and offline rules
+globs: clients/apps/mobile/**,clients/packages/mobile-ui/**
+alwaysApply: false
+---
+
+Use SignalR in foreground, push in background, and cursor sync on resume. Store credentials in Keychain/Keystore and message/outbox state in SQLite. Test app killed state, permissions, token expiry, and network changes.

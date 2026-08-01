@@ -1,0 +1,17 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/RetroMessenger.Domain/RetroMessenger.Domain.csproj" />
+    <Project Path="src/RetroMessenger.Contracts/RetroMessenger.Contracts.csproj" />
+    <Project Path="src/RetroMessenger.Application/RetroMessenger.Application.csproj" />
+    <Project Path="src/RetroMessenger.Infrastructure/RetroMessenger.Infrastructure.csproj" />
+    <Project Path="src/RetroMessenger.Api/RetroMessenger.Api.csproj" />
+    <Project Path="src/RetroMessenger.Worker/RetroMessenger.Worker.csproj" />
+    <Project Path="src/RetroMessenger.Migrations/RetroMessenger.Migrations.csproj" />
+    <Project Path="src/RetroMessenger.ServiceDefaults/RetroMessenger.ServiceDefaults.csproj" />
+    <Project Path="src/RetroMessenger.AppHost/RetroMessenger.AppHost.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/RetroMessenger.SmokeTests/RetroMessenger.SmokeTests.csproj" />
+    <Project Path="tests/RetroMessenger.IntegrationTests/RetroMessenger.IntegrationTests.csproj" />
+  </Folder>
+</Solution>

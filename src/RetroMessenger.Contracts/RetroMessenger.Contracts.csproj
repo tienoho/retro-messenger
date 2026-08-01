@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>RetroMessenger.Contracts</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../RetroMessenger.Domain/RetroMessenger.Domain.csproj" />
+  </ItemGroup>
+</Project>

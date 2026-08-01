@@ -1,0 +1,22 @@
+name: Backend
+
+on:
+  pull_request:
+    paths:
+      - "src/**"
+      - "tests/**"
+      - "*.props"
+      - "global.json"
+      - "RetroMessenger.slnx"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+      - run: dotnet restore RetroMessenger.slnx
+      - run: dotnet build RetroMessenger.slnx --no-restore --configuration Release
+      - run: dotnet run --project tests/RetroMessenger.SmokeTests --configuration Release

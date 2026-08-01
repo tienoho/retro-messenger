@@ -1,0 +1,86 @@
+{
+  "orchestrator": {
+    "file": "orchestrator.md",
+    "description": "Coordinates multi-agent work, selects specialists and workflows, enforces handoffs, and verifies completion across Retro Messenger.",
+    "skill": "agent-orchestration",
+    "mode": "write"
+  },
+  "solution-architect": {
+    "file": "solution-architect.md",
+    "description": "Use for architecture decisions, module boundaries, deployment topology, scalability, ADRs, and cross-cutting changes.",
+    "skill": "solution-architecture",
+    "mode": "read"
+  },
+  "product-owner": {
+    "file": "product-owner.md",
+    "description": "Use to convert product requests into testable specifications, business rules, acceptance criteria, scope, and edge cases.",
+    "skill": "product-specification",
+    "mode": "read"
+  },
+  "dotnet-backend": {
+    "file": "dotnet-backend.md",
+    "description": "Use for ASP.NET Core, domain logic, application handlers, EF Core, Dapper, OpenIddict, Wolverine, Hangfire, and provider integrations.",
+    "skill": "dotnet-backend",
+    "mode": "write"
+  },
+  "realtime-signalr": {
+    "file": "realtime-signalr.md",
+    "description": "Use for SignalR hubs, realtime contracts, connection lifecycle, groups, presence, typing, Buzz, receipts, and call signaling.",
+    "skill": "realtime-signalr",
+    "mode": "write"
+  },
+  "web-frontend": {
+    "file": "web-frontend.md",
+    "description": "Use for the React web messenger, Fluent UI wrappers, IndexedDB, TanStack Query, Zustand, message timelines, and web accessibility.",
+    "skill": "web-frontend",
+    "mode": "write"
+  },
+  "electron-desktop": {
+    "file": "electron-desktop.md",
+    "description": "Use for Electron main/preload/renderer boundaries, windows, tray, native notifications, secure storage, SQLite, updates, and desktop Buzz.",
+    "skill": "electron-desktop",
+    "mode": "write"
+  },
+  "react-native-mobile": {
+    "file": "react-native-mobile.md",
+    "description": "Use for React Native mobile, SQLite, foreground/background lifecycle, push, SignalR, LiveKit, native permissions, and calls.",
+    "skill": "react-native-mobile",
+    "mode": "write"
+  },
+  "admin-portal": {
+    "file": "admin-portal.md",
+    "description": "Use for the Refine and Ant Design admin portal, moderation, permissions, audit, feature flags, and operations dashboards.",
+    "skill": "admin-portal",
+    "mode": "write"
+  },
+  "database-postgresql": {
+    "file": "database-postgresql.md",
+    "description": "Use for PostgreSQL schema, migrations, indexes, query plans, concurrency, retention, backup, and data repair.",
+    "skill": "database-postgresql",
+    "mode": "write"
+  },
+  "devops-observability": {
+    "file": "devops-observability.md",
+    "description": "Use for Docker, CI/CD, Nginx, deployment, health checks, OpenTelemetry, monitoring, backup, releases, and rollback.",
+    "skill": "devops-observability",
+    "mode": "write"
+  },
+  "security-reviewer": {
+    "file": "security-reviewer.md",
+    "description": "Use proactively for authentication, authorization, uploads, Electron IPC, mobile storage, admin actions, privacy, and threat review.",
+    "skill": "security-review",
+    "mode": "read"
+  },
+  "qa-automation": {
+    "file": "qa-automation.md",
+    "description": "Use for unit, integration, contract, E2E, load, concurrency, failure-mode, and regression test design or implementation.",
+    "skill": "qa-testing",
+    "mode": "write"
+  },
+  "code-reviewer": {
+    "file": "code-reviewer.md",
+    "description": "Use after implementation to review correctness, architecture, security, data integrity, concurrency, performance, tests, and documentation.",
+    "skill": "code-review",
+    "mode": "read"
+  }
+}

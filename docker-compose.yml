@@ -1,0 +1,162 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-retro_messenger}
+      POSTGRES_USER: ${POSTGRES_USER:-retro}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./deploy/postgres/migrations/001_initial.sql:/docker-entrypoint-initdb.d/001_initial.sql:ro
+      - ./deploy/postgres/migrations/002_media_attachments.sql:/docker-entrypoint-initdb.d/002_media_attachments.sql:ro
+      - ./deploy/postgres/migrations/003_identity_and_feature_schema.sql:/docker-entrypoint-initdb.d/003_identity_and_feature_schema.sql:ro
+      - ./deploy/postgres/migrations/004_refresh_sessions.sql:/docker-entrypoint-initdb.d/004_refresh_sessions.sql:ro
+      - ./deploy/postgres/migrations/005_contact_ownership.sql:/docker-entrypoint-initdb.d/005_contact_ownership.sql:ro
+      - ./deploy/postgres/migrations/006_admin_audit.sql:/docker-entrypoint-initdb.d/006_admin_audit.sql:ro
+      - ./deploy/postgres/migrations/007_media_processing_leases.sql:/docker-entrypoint-initdb.d/007_media_processing_leases.sql:ro
+      - ./deploy/postgres/seed/001_demo.sql:/docker-entrypoint-initdb.d/008_demo.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-retro} -d ${POSTGRES_DB:-retro_messenger}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    ports: ["5432:5432"]
+
+  redis:
+    image: redis:8-alpine
+    command: ["redis-server", "--appendonly", "yes", "--requirepass", "${REDIS_PASSWORD:-change-me}"]
+    volumes: ["redis_data:/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a ${REDIS_PASSWORD:-change-me} ping | grep PONG"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    ports: ["6379:6379"]
+
+  minio:
+    image: minio/minio
+    command: ["server", "/data", "--console-address", ":9001"]
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-retroadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-change-me-strong}
+      MINIO_API_CORS_ALLOW_ORIGIN: ${WEB_ORIGIN:-http://localhost:5173}
+    volumes: ["minio_data:/data"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+    ports: ["9000:9000", "9001:9001"]
+
+  clamav:
+    image: clamav/clamav:stable
+    volumes: ["clamav_data:/var/lib/clamav"]
+    healthcheck:
+      test: ["CMD-SHELL", "printf 'zPING\\0' | nc -w 2 127.0.0.1 3310 | grep -a PONG"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+      start_period: 90s
+
+  livekit:
+    image: livekit/livekit-server
+    command: ["--config", "/etc/livekit.yaml"]
+    volumes:
+      - ./deploy/livekit/livekit.yaml:/etc/livekit.yaml:ro
+    ports:
+      - "7880:7880"
+      - "7881:7881"
+      - "50000-50100:50000-50100/udp"
+
+  api:
+    build:
+      context: .
+      dockerfile: src/RetroMessenger.Api/Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__postgres: Host=postgres;Port=5432;Database=${POSTGRES_DB:-retro_messenger};Username=${POSTGRES_USER:-retro};Password=${POSTGRES_PASSWORD:-change-me}
+      ConnectionStrings__redis: redis:6379,password=${REDIS_PASSWORD:-change-me}
+      Authentication__Jwt__SigningKey: ${JWT_SIGNING_KEY:-local-development-only-signing-key-change-before-production-2026}
+      Authentication__Jwt__Issuer: ${JWT_ISSUER:-retro-messenger}
+      Authentication__Jwt__Audience: ${JWT_AUDIENCE:-retro-messenger-clients}
+      Authentication__RateLimit__LoginPermitLimit: ${AUTH_LOGIN_PERMIT_LIMIT:-10}
+      Authentication__RateLimit__LoginWindowSeconds: ${AUTH_LOGIN_WINDOW_SECONDS:-60}
+      Authentication__RateLimit__RegisterPermitLimit: ${AUTH_REGISTER_PERMIT_LIMIT:-5}
+      Authentication__RateLimit__RegisterWindowSeconds: ${AUTH_REGISTER_WINDOW_SECONDS:-3600}
+      Authentication__RateLimit__TokenPermitLimit: ${AUTH_TOKEN_PERMIT_LIMIT:-30}
+      Authentication__RateLimit__TokenWindowSeconds: ${AUTH_TOKEN_WINDOW_SECONDS:-60}
+      Storage__Endpoint: http://minio:9000
+      Storage__PublicEndpoint: ${MINIO_PUBLIC_ENDPOINT:-http://localhost:9000}
+      Storage__AccessKey: ${MINIO_ROOT_USER:-retroadmin}
+      Storage__SecretKey: ${MINIO_ROOT_PASSWORD:-change-me-strong}
+      Storage__BucketName: ${MINIO_BUCKET_NAME:-retro-messenger}
+      Storage__Region: us-east-1
+      Storage__UsePathStyle: "true"
+      Storage__AutoCreateBucket: "true"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    ports: ["5080:8080"]
+
+  worker:
+    build:
+      context: .
+      dockerfile: src/RetroMessenger.Worker/Dockerfile
+    environment:
+      DOTNET_ENVIRONMENT: Development
+      ConnectionStrings__postgres: Host=postgres;Port=5432;Database=${POSTGRES_DB:-retro_messenger};Username=${POSTGRES_USER:-retro};Password=${POSTGRES_PASSWORD:-change-me}
+      ConnectionStrings__redis: redis:6379,password=${REDIS_PASSWORD:-change-me}
+      Storage__Endpoint: http://minio:9000
+      Storage__PublicEndpoint: ${MINIO_PUBLIC_ENDPOINT:-http://localhost:9000}
+      Storage__AccessKey: ${MINIO_ROOT_USER:-retroadmin}
+      Storage__SecretKey: ${MINIO_ROOT_PASSWORD:-change-me-strong}
+      Storage__BucketName: ${MINIO_BUCKET_NAME:-retro-messenger}
+      Storage__Region: us-east-1
+      Storage__UsePathStyle: "true"
+      Storage__AutoCreateBucket: "true"
+      ClamAv__Host: clamav
+      ClamAv__Port: "3310"
+      ClamAv__ChunkSizeBytes: "65536"
+      ClamAv__TimeoutSeconds: "60"
+      FFmpeg__ExecutablePath: /usr/bin/ffmpeg
+      FFmpeg__MaxDimensionPixels: "320"
+      FFmpeg__TimeoutSeconds: "30"
+      MediaProcessing__BatchSize: "10"
+      MediaProcessing__LeaseSeconds: "300"
+      MediaProcessing__MaxAttempts: "5"
+      MediaProcessing__InitialRetryDelaySeconds: "5"
+      MediaProcessing__MaxRetryDelaySeconds: "300"
+      MediaCleanup__BatchSize: "20"
+      MediaCleanup__IntervalSeconds: "60"
+      MediaCleanup__LeaseSeconds: "300"
+      MediaCleanup__UploadTimeoutHours: "24"
+      MediaCleanup__TerminalRetentionDays: "7"
+      MediaCleanup__FailureRetrySeconds: "60"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      clamav:
+        condition: service_healthy
+
+  demo:
+    image: node:22-alpine
+    working_dir: /repo
+    command: ["node", "tools/demo-server/server.mjs"]
+    volumes:
+      - ./:/repo:ro
+    ports: ["4173:4173"]
+
+volumes:
+  postgres_data:
+  redis_data:
+  minio_data:
+  clamav_data:

@@ -1,0 +1,22 @@
+{
+  "name": "@retro/web-ui",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.tsx",
+  "types": "./src/index.tsx",
+  "devDependencies": {
+    "react": "19.0.0",
+    "@types/react": "19.0.2",
+    "typescript": "5.7.2"
+  },
+  "scripts": {
+    "build": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test",
+    "lint": "echo web-ui:lint"
+  },
+  "peerDependencies": {
+    "react": ">=19 <20"
+  }
+}

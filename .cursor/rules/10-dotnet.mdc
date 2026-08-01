@@ -1,0 +1,7 @@
+---
+description: .NET backend and test rules
+globs: src/**/*.cs,tests/**/*.cs
+alwaysApply: false
+---
+
+Use async end-to-end, CancellationToken, thin endpoints/hubs, Domain invariants, Application handlers, EF Core transactions, Dapper only for targeted reads, and Wolverine outbox for post-commit integration events. Add tests for authorization, idempotency, and failure paths.

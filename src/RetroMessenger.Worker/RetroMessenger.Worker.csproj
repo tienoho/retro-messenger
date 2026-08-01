@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>RetroMessenger.Worker</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../RetroMessenger.Application/RetroMessenger.Application.csproj" />
+    <ProjectReference Include="../RetroMessenger.Infrastructure/RetroMessenger.Infrastructure.csproj" />
+    <ProjectReference Include="../RetroMessenger.ServiceDefaults/RetroMessenger.ServiceDefaults.csproj" />
+  </ItemGroup>
+</Project>

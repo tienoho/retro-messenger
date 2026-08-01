@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="Testcontainers.PostgreSQL" />
+    <PackageReference Include="Testcontainers.Redis" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../src/RetroMessenger.Domain/RetroMessenger.Domain.csproj" />
+    <ProjectReference Include="../../src/RetroMessenger.Contracts/RetroMessenger.Contracts.csproj" />
+    <ProjectReference Include="../../src/RetroMessenger.Application/RetroMessenger.Application.csproj" />
+    <ProjectReference Include="../../src/RetroMessenger.Infrastructure/RetroMessenger.Infrastructure.csproj" />
+    <ProjectReference Include="../../src/RetroMessenger.Api/RetroMessenger.Api.csproj" />
+    <ProjectReference Include="../../src/RetroMessenger.Worker/RetroMessenger.Worker.csproj" />
+  </ItemGroup>
+</Project>
