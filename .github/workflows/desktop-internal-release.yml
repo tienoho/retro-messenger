@@ -24,23 +24,32 @@ jobs:
           cache-dependency-path: clients/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
 
-      - name: Import internal test certificate
-        id: certificate
+      - name: Decode internal test certificate
         shell: pwsh
         working-directory: .
         env:
           WINDOWS_TEST_PFX_BASE64: ${{ secrets.WINDOWS_TEST_PFX_BASE64 }}
-          WINDOWS_TEST_PFX_PASSWORD: ${{ secrets.WINDOWS_TEST_PFX_PASSWORD }}
         run: |
-          if ([string]::IsNullOrWhiteSpace($env:WINDOWS_TEST_PFX_BASE64) -or [string]::IsNullOrWhiteSpace($env:WINDOWS_TEST_PFX_PASSWORD)) {
-            throw "Internal signing requires WINDOWS_TEST_PFX_BASE64 and WINDOWS_TEST_PFX_PASSWORD."
+          if ([string]::IsNullOrWhiteSpace($env:WINDOWS_TEST_PFX_BASE64)) {
+            throw "Internal signing requires WINDOWS_TEST_PFX_BASE64."
           }
-
           $pfxPath = Join-Path $env:RUNNER_TEMP "retro-messenger-internal-test.pfx"
           $cerPath = Join-Path $env:RUNNER_TEMP "retro-messenger-internal-test.cer"
           [IO.File]::WriteAllBytes($pfxPath, [Convert]::FromBase64String($env:WINDOWS_TEST_PFX_BASE64))
+          "TEST_PFX_PATH=$pfxPath" >> $env:GITHUB_ENV
+          "TEST_CER_PATH=$cerPath" >> $env:GITHUB_ENV
+
+      - name: Import and validate internal private key
+        shell: pwsh
+        working-directory: .
+        env:
+          WINDOWS_TEST_PFX_PASSWORD: ${{ secrets.WINDOWS_TEST_PFX_PASSWORD }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:WINDOWS_TEST_PFX_PASSWORD)) {
+            throw "Internal signing requires WINDOWS_TEST_PFX_PASSWORD."
+          }
           $password = ConvertTo-SecureString $env:WINDOWS_TEST_PFX_PASSWORD -AsPlainText -Force
-          $certificate = Import-PfxCertificate -FilePath $pfxPath -CertStoreLocation Cert:\CurrentUser\My -Password $password
+          $certificate = Import-PfxCertificate -FilePath $env:TEST_PFX_PATH -CertStoreLocation Cert:\CurrentUser\My -Password $password
 
           if ($certificate.Subject -ne $certificate.Issuer) {
             throw "The internal workflow only accepts a self-signed test certificate."
@@ -52,11 +61,18 @@ jobs:
             throw "The certificate does not contain the Code Signing EKU."
           }
 
-          Export-Certificate -Cert $certificate -FilePath $cerPath -Force | Out-Null
-          Import-Certificate -FilePath $cerPath -CertStoreLocation Cert:\CurrentUser\Root | Out-Null
-          Import-Certificate -FilePath $cerPath -CertStoreLocation Cert:\CurrentUser\TrustedPublisher | Out-Null
-          "TEST_PFX_PATH=$pfxPath" >> $env:GITHUB_ENV
+          Export-Certificate -Cert $certificate -FilePath $env:TEST_CER_PATH -Force | Out-Null
           "TEST_CERT_THUMBPRINT=$($certificate.Thumbprint)" >> $env:GITHUB_ENV
+
+      - name: Trust internal certificate root for this runner
+        shell: pwsh
+        working-directory: .
+        run: Import-Certificate -FilePath $env:TEST_CER_PATH -CertStoreLocation Cert:\CurrentUser\Root | Out-Null
+
+      - name: Trust internal certificate publisher for this runner
+        shell: pwsh
+        working-directory: .
+        run: Import-Certificate -FilePath $env:TEST_CER_PATH -CertStoreLocation Cert:\CurrentUser\TrustedPublisher | Out-Null
 
       - run: pnpm --filter @retro/desktop typecheck
       - run: pnpm --filter @retro/desktop test
