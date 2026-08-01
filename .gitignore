@@ -4,7 +4,9 @@
 **/node_modules/
 **/dist/
 **/.turbo/
-.agents/
+.agents/*
+!.agents/skills/
+!.agents/skills/**
 **/.vite/
 **/coverage/
 clients/apps/mobile/.expo/
