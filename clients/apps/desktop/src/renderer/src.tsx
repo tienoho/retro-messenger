@@ -128,9 +128,13 @@ function App() {
 
   useEffect(() => {
     let cancelled = false;
-    void window.retroDesktop.getSession().then(async (nextSession) => {
+    void Promise.all([
+      window.retroDesktop.getSession(),
+      window.retroDesktop.getUpdaterState(),
+    ]).then(async ([nextSession, nextUpdater]) => {
       if (cancelled) return;
       setSession(nextSession);
+      setUpdater(nextUpdater);
       if (nextSession.authenticated) {
         try {
           await loadWorkspace();
@@ -358,49 +362,52 @@ function App() {
   if (!session.authenticated || !session.user)
     return (
       <main className="authScreen">
-        <section className="authPanel">
-          <div className="brandMark">R!</div>
-          <p className="eyebrow">RETRO MESSENGER</p>
-          <h1>
-            Trò chuyện như ngày xưa.
-            <br />
-            An toàn như hôm nay.
-          </h1>
-          <p className="authCopy">
-            Phiên đăng nhập được mã hóa bởi hệ điều hành và không bao giờ đi vào
-            trang hiển thị.
-          </p>
-          <form onSubmit={(event) => void login(event)}>
-            <label>
-              Tên đăng nhập
-              <input
-                autoComplete="username"
-                maxLength={64}
-                value={username}
-                onChange={(event) => setUsername(event.target.value)}
-                required
-              />
-            </label>
-            <label>
-              Mật khẩu
-              <input
-                autoComplete="current-password"
-                type="password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                required
-              />
-            </label>
-            {error && (
-              <p className="error" role="alert">
-                {error}
-              </p>
-            )}
-            <button className="primaryButton" disabled={busy} type="submit">
-              {busy ? "Đang đăng nhập…" : "Đăng nhập"}
-            </button>
-          </form>
-        </section>
+        <div className="authStack">
+          <section className="authPanel">
+            <div className="brandMark">R!</div>
+            <p className="eyebrow">RETRO MESSENGER</p>
+            <h1>
+              Trò chuyện như ngày xưa.
+              <br />
+              An toàn như hôm nay.
+            </h1>
+            <p className="authCopy">
+              Phiên đăng nhập được mã hóa bởi hệ điều hành và không bao giờ đi
+              vào trang hiển thị.
+            </p>
+            <form onSubmit={(event) => void login(event)}>
+              <label>
+                Tên đăng nhập
+                <input
+                  autoComplete="username"
+                  maxLength={64}
+                  value={username}
+                  onChange={(event) => setUsername(event.target.value)}
+                  required
+                />
+              </label>
+              <label>
+                Mật khẩu
+                <input
+                  autoComplete="current-password"
+                  type="password"
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  required
+                />
+              </label>
+              {error && (
+                <p className="error" role="alert">
+                  {error}
+                </p>
+              )}
+              <button className="primaryButton" disabled={busy} type="submit">
+                {busy ? "Đang đăng nhập…" : "Đăng nhập"}
+              </button>
+            </form>
+          </section>
+          <Updater state={updater} />
+        </div>
       </main>
     );
 

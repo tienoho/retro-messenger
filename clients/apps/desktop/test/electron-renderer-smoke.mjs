@@ -15,6 +15,7 @@ const user = {
   status: "online",
 };
 let signedIn = false;
+let updateDownloadRequests = 0;
 const outbox = [];
 const watchdog = setTimeout(() => {
   console.error("Electron renderer smoke watchdog expired.");
@@ -76,9 +77,14 @@ function registerMockHandlers() {
     return { authenticated: true, user };
   });
   ipcMain.handle("desktop:data:clear", () => {});
-  ipcMain.handle("desktop:updater:get-state", () => ({ state: "disabled" }));
+  ipcMain.handle("desktop:updater:get-state", () => ({
+    state: "available",
+    version: "0.1.1",
+  }));
   ipcMain.handle("desktop:updater:check", () => {});
-  ipcMain.handle("desktop:updater:download", () => {});
+  ipcMain.handle("desktop:updater:download", () => {
+    updateDownloadRequests += 1;
+  });
   ipcMain.handle("desktop:updater:install", () => {});
 }
 
@@ -119,6 +125,34 @@ async function run() {
       "document.body.innerText.includes('Trò chuyện như ngày xưa')",
     );
     console.log("Electron smoke: signed-out renderer ready");
+
+    await waitFor(
+      window,
+      "document.querySelector('.authScreen .updater button')",
+    );
+    await window.webContents.executeJavaScript(
+      "document.querySelector('.authScreen .updater button').click()",
+    );
+    assert.equal(updateDownloadRequests, 1);
+    const updateLayout = await window.webContents.executeJavaScript(`(() => {
+      const stack = document.querySelector('.authStack');
+      const updater = document.querySelector('.authScreen .updater');
+      const stackRect = stack.getBoundingClientRect();
+      const updaterRect = updater.getBoundingClientRect();
+      return {
+        display: getComputedStyle(stack).display,
+        marginTop: getComputedStyle(updater).marginTop,
+        contained:
+          updaterRect.left >= stackRect.left &&
+          updaterRect.right <= stackRect.right,
+      };
+    })()`);
+    assert.deepEqual(updateLayout, {
+      display: "grid",
+      marginTop: "0px",
+      contained: true,
+    });
+    console.log("Electron smoke: signed-out update download requested");
 
     const bridgeKeys = await window.webContents.executeJavaScript(
       "Object.keys(window.retroDesktop).sort()",

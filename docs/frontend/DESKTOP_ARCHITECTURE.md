@@ -8,7 +8,7 @@
 - Preload chỉ expose typed capability whitelist. Main validate payload và exact sender frame trước mọi thao tác đặc quyền.
 - Upload/download chạy ở main qua presigned URL HTTPS hoặc loopback, cấm redirect và giới hạn 25 MB. Binary không đi qua SignalR.
 - Close của main window chuyển xuống tray; menu **Thoát** mới kết thúc ứng dụng. Notification click focus đúng conversation.
-- `electron-updater` chỉ hoạt động trong packaged build. Stable/beta release yêu cầu installer Authenticode hợp lệ trước khi publish metadata.
+- `electron-updater` chỉ hoạt động trong packaged build. Renderer lấy snapshot và nhận state event ngay cả trước đăng nhập để người dùng luôn có thể tải/cài bản sửa lỗi. Stable/beta release yêu cầu installer Authenticode hợp lệ trước khi publish metadata.
 
 ## Ranh giới tương thích
 
