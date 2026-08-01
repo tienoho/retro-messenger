@@ -20,6 +20,7 @@ for dirpath, dirnames, filenames in os.walk(root):
             "__pycache__",
             ".turbo",
             ".agents",
+            ".expo",
         ]
     ]
     for f in filenames:

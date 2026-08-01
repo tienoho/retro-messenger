@@ -47,7 +47,21 @@ for rel in required:
 def walk_repo_files(ext: str | None = None) -> list[Path]:
     res = []
     for dirpath, dirnames, filenames in os.walk(root):
-        dirnames[:] = [d for d in dirnames if d not in ["node_modules", ".git", "bin", "obj", "__pycache__", ".turbo", ".agents"]]
+        dirnames[:] = [
+            d
+            for d in dirnames
+            if d
+            not in [
+                "node_modules",
+                ".git",
+                "bin",
+                "obj",
+                "__pycache__",
+                ".turbo",
+                ".agents",
+                ".expo",
+            ]
+        ]
         for f in filenames:
             if f.endswith(".pyc"):
                 continue
@@ -209,6 +223,7 @@ for dirpath, dirnames, filenames in os.walk(root):
             "__pycache__",
             ".turbo",
             ".agents",
+            ".expo",
         ]
     ]
     for f in filenames:

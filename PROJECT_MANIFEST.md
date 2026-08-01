@@ -205,8 +205,6 @@
 - `clients/apps/desktop/test/validation.test.mjs`
 - `clients/apps/desktop/tsconfig.json`
 - `clients/apps/mobile/.eslintrc.js`
-- `clients/apps/mobile/.expo/cache/eslint/.cache_1bk97bn`
-- `clients/apps/mobile/.expo/dev/logs/export.log`
 - `clients/apps/mobile/README.md`
 - `clients/apps/mobile/app.json`
 - `clients/apps/mobile/app/_layout.tsx`
