@@ -118,7 +118,7 @@ jobs:
           if ($uninstall.ExitCode -ne 0) { throw "Silent uninstall failed with exit code $($uninstall.ExitCode)." }
           if (Test-Path -LiteralPath $executable) { throw "Application remained installed after uninstall." }
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: retro-messenger-windows-internal-${{ github.run_number }}
           path: |
