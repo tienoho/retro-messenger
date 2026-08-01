@@ -64,16 +64,6 @@ jobs:
           Export-Certificate -Cert $certificate -FilePath $env:TEST_CER_PATH -Force | Out-Null
           "TEST_CERT_THUMBPRINT=$($certificate.Thumbprint)" >> $env:GITHUB_ENV
 
-      - name: Trust internal certificate root for this runner
-        shell: pwsh
-        working-directory: .
-        run: Import-Certificate -FilePath $env:TEST_CER_PATH -CertStoreLocation Cert:\CurrentUser\Root | Out-Null
-
-      - name: Trust internal certificate publisher for this runner
-        shell: pwsh
-        working-directory: .
-        run: Import-Certificate -FilePath $env:TEST_CER_PATH -CertStoreLocation Cert:\CurrentUser\TrustedPublisher | Out-Null
-
       - run: pnpm --filter @retro/desktop typecheck
       - run: pnpm --filter @retro/desktop test
       - run: pnpm --filter @retro/desktop build
@@ -95,10 +85,14 @@ jobs:
           $installer = Get-ChildItem apps/desktop/release -Filter "Retro-Messenger-*.exe" | Select-Object -First 1
           if ($null -eq $installer) { throw "Installer was not generated." }
           $signature = Get-AuthenticodeSignature -LiteralPath $installer.FullName
-          if ($signature.Status -ne "Valid") { throw "Invalid Authenticode signature: $($signature.Status)" }
+          if ($null -eq $signature.SignerCertificate) { throw "Installer does not contain an Authenticode signer." }
           if ($signature.SignerCertificate.Thumbprint -ne $env:TEST_CERT_THUMBPRINT) {
             throw "Installer was signed by an unexpected certificate."
           }
+          if ($signature.Status -notin @("UnknownError", "NotTrusted")) {
+            throw "Expected a cryptographically signed but untrusted internal certificate; got $($signature.Status)."
+          }
+          "Internal signature trust status: $($signature.Status)."
           Get-FileHash -Algorithm SHA256 -LiteralPath $installer.FullName |
             ForEach-Object { "$($_.Hash.ToLowerInvariant())  $($installer.Name)" } |
             Set-Content apps/desktop/release/SHA256SUMS.txt -Encoding ascii
@@ -153,9 +147,7 @@ jobs:
         working-directory: .
         run: |
           if (-not [string]::IsNullOrWhiteSpace($env:TEST_CERT_THUMBPRINT)) {
-            foreach ($store in @("My", "Root", "TrustedPublisher")) {
-              Remove-Item -LiteralPath "Cert:\CurrentUser\$store\$env:TEST_CERT_THUMBPRINT" -Force -ErrorAction SilentlyContinue
-            }
+            Remove-Item -LiteralPath "Cert:\CurrentUser\My\$env:TEST_CERT_THUMBPRINT" -Force -ErrorAction SilentlyContinue
           }
           if (-not [string]::IsNullOrWhiteSpace($env:TEST_PFX_PATH)) {
             Remove-Item -LiteralPath $env:TEST_PFX_PATH -Force -ErrorAction SilentlyContinue

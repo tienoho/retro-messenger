@@ -13,7 +13,7 @@ Run `scripts/create_desktop_test_certificate.ps1` from PowerShell to create a pr
 
 ## Gates
 
-The Windows hosted runner temporarily trusts only the supplied test certificate, then runs Desktop typecheck, unit tests, production build, Electron smoke, signed NSIS packaging, signer-thumbprint verification, silent install, launch smoke and silent uninstall. The certificate is removed in an `always()` cleanup step.
+The Windows hosted runner imports the private key only into its ephemeral user certificate store. It deliberately does not trust the self-signed root. The workflow then runs Desktop typecheck, unit tests, production build, Electron smoke, signed NSIS packaging, signer-thumbprint and expected-untrusted-status verification, silent install, launch smoke and silent uninstall. The certificate is removed in an `always()` cleanup step.
 
 Successful runs upload an artifact and create a GitHub prerelease with an `-internal` tag. Windows machines outside the workflow do not trust the self-signed certificate unless its public certificate is explicitly installed. Never promote an internal prerelease to stable.
 
