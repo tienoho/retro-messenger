@@ -80,6 +80,7 @@
 - `.github/instructions/web.instructions.md`
 - `.github/workflows/backend.yml`
 - `.github/workflows/clients.yml`
+- `.github/workflows/desktop-internal-release.yml`
 - `.github/workflows/desktop-release.yml`
 - `.github/workflows/repository-validation.yml`
 - `.gitignore`
@@ -409,6 +410,7 @@
 - `docs/frontend/DESKTOP_ARCHITECTURE.md`
 - `docs/frontend/MOBILE_ARCHITECTURE.md`
 - `docs/frontend/WEB_ARCHITECTURE.md`
+- `docs/operations/DESKTOP_INTERNAL_SIGNING.md`
 - `docs/operations/RUNBOOK.md`
 - `docs/protocols/REALTIME_PROTOCOL.md`
 - `docs/protocols/REST_API.md`
@@ -418,6 +420,7 @@
 - `docs/testing/TESTING.md`
 - `global.json`
 - `requirements-dev.txt`
+- `scripts/create_desktop_test_certificate.ps1`
 - `scripts/generate_tool_adapters.py`
 - `scripts/smoke_demo.sh`
 - `scripts/update_manifest.py`

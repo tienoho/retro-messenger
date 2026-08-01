@@ -1,0 +1,145 @@
+name: Desktop Windows internal signing test
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-sign-install-publish:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: clients
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+          cache-dependency-path: clients/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+
+      - name: Import internal test certificate
+        id: certificate
+        shell: pwsh
+        working-directory: .
+        env:
+          WINDOWS_TEST_PFX_BASE64: ${{ secrets.WINDOWS_TEST_PFX_BASE64 }}
+          WINDOWS_TEST_PFX_PASSWORD: ${{ secrets.WINDOWS_TEST_PFX_PASSWORD }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:WINDOWS_TEST_PFX_BASE64) -or [string]::IsNullOrWhiteSpace($env:WINDOWS_TEST_PFX_PASSWORD)) {
+            throw "Internal signing requires WINDOWS_TEST_PFX_BASE64 and WINDOWS_TEST_PFX_PASSWORD."
+          }
+
+          $pfxPath = Join-Path $env:RUNNER_TEMP "retro-messenger-internal-test.pfx"
+          $cerPath = Join-Path $env:RUNNER_TEMP "retro-messenger-internal-test.cer"
+          [IO.File]::WriteAllBytes($pfxPath, [Convert]::FromBase64String($env:WINDOWS_TEST_PFX_BASE64))
+          $password = ConvertTo-SecureString $env:WINDOWS_TEST_PFX_PASSWORD -AsPlainText -Force
+          $certificate = Import-PfxCertificate -FilePath $pfxPath -CertStoreLocation Cert:\CurrentUser\My -Password $password
+
+          if ($certificate.Subject -ne $certificate.Issuer) {
+            throw "The internal workflow only accepts a self-signed test certificate."
+          }
+          if ($certificate.NotAfter -le (Get-Date).AddDays(7)) {
+            throw "The internal test certificate expires too soon."
+          }
+          if ($certificate.EnhancedKeyUsageList.ObjectId -notcontains "1.3.6.1.5.5.7.3.3") {
+            throw "The certificate does not contain the Code Signing EKU."
+          }
+
+          Export-Certificate -Cert $certificate -FilePath $cerPath -Force | Out-Null
+          Import-Certificate -FilePath $cerPath -CertStoreLocation Cert:\CurrentUser\Root | Out-Null
+          Import-Certificate -FilePath $cerPath -CertStoreLocation Cert:\CurrentUser\TrustedPublisher | Out-Null
+          "TEST_PFX_PATH=$pfxPath" >> $env:GITHUB_ENV
+          "TEST_CERT_THUMBPRINT=$($certificate.Thumbprint)" >> $env:GITHUB_ENV
+
+      - run: pnpm --filter @retro/desktop typecheck
+      - run: pnpm --filter @retro/desktop test
+      - run: pnpm --filter @retro/desktop build
+      - run: pnpm --filter @retro/desktop test:electron
+
+      - name: Package signed NSIS x64 installer
+        shell: pwsh
+        env:
+          CSC_KEY_PASSWORD: ${{ secrets.WINDOWS_TEST_PFX_PASSWORD }}
+        run: |
+          $env:CSC_LINK = $env:TEST_PFX_PATH
+          pnpm --filter @retro/desktop icon:generate
+          pnpm --filter @retro/desktop build
+          pnpm --filter @retro/desktop exec electron-builder --win nsis --x64 --publish never
+
+      - name: Verify signature, checksum and SBOM
+        shell: pwsh
+        run: |
+          $installer = Get-ChildItem apps/desktop/release -Filter "Retro-Messenger-*.exe" | Select-Object -First 1
+          if ($null -eq $installer) { throw "Installer was not generated." }
+          $signature = Get-AuthenticodeSignature -LiteralPath $installer.FullName
+          if ($signature.Status -ne "Valid") { throw "Invalid Authenticode signature: $($signature.Status)" }
+          if ($signature.SignerCertificate.Thumbprint -ne $env:TEST_CERT_THUMBPRINT) {
+            throw "Installer was signed by an unexpected certificate."
+          }
+          Get-FileHash -Algorithm SHA256 -LiteralPath $installer.FullName |
+            ForEach-Object { "$($_.Hash.ToLowerInvariant())  $($installer.Name)" } |
+            Set-Content apps/desktop/release/SHA256SUMS.txt -Encoding ascii
+          pnpm licenses list --json | Set-Content apps/desktop/release/sbom-licenses.json -Encoding utf8
+
+      - name: Smoke install, launch and uninstall on clean runner
+        shell: pwsh
+        run: |
+          $installer = Get-ChildItem apps/desktop/release -Filter "Retro-Messenger-*.exe" | Select-Object -First 1
+          $install = Start-Process -FilePath $installer.FullName -ArgumentList "/S" -PassThru -Wait
+          if ($install.ExitCode -ne 0) { throw "Silent install failed with exit code $($install.ExitCode)." }
+
+          $executable = Join-Path $env:LOCALAPPDATA "Programs\Retro Messenger\Retro Messenger.exe"
+          if (-not (Test-Path -LiteralPath $executable)) { throw "Installed executable was not found." }
+          $application = Start-Process -FilePath $executable -PassThru
+          Start-Sleep -Seconds 8
+          if ($application.HasExited) { throw "Installed application exited during launch smoke test." }
+          Stop-Process -Id $application.Id -Force
+
+          $uninstaller = Join-Path (Split-Path $executable) "Uninstall Retro Messenger.exe"
+          if (-not (Test-Path -LiteralPath $uninstaller)) { throw "Uninstaller was not found." }
+          $uninstall = Start-Process -FilePath $uninstaller -ArgumentList "/S" -PassThru -Wait
+          if ($uninstall.ExitCode -ne 0) { throw "Silent uninstall failed with exit code $($uninstall.ExitCode)." }
+          if (Test-Path -LiteralPath $executable) { throw "Application remained installed after uninstall." }
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: retro-messenger-windows-internal-${{ github.run_number }}
+          path: |
+            clients/apps/desktop/release/*.exe
+            clients/apps/desktop/release/*.blockmap
+            clients/apps/desktop/release/*.yml
+            clients/apps/desktop/release/SHA256SUMS.txt
+            clients/apps/desktop/release/sbom-licenses.json
+
+      - name: Publish internal GitHub prerelease
+        shell: pwsh
+        working-directory: .
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $version = (Get-Content clients/apps/desktop/package.json -Raw | ConvertFrom-Json).version
+          $tag = "v$version-internal.$env:GITHUB_RUN_NUMBER.$env:GITHUB_RUN_ATTEMPT"
+          $assets = Get-ChildItem clients/apps/desktop/release -File |
+            Where-Object { $_.Extension -in ".exe", ".blockmap", ".yml", ".txt", ".json" } |
+            ForEach-Object { $_.FullName }
+          gh release create $tag $assets --prerelease --title "Retro Messenger internal signing test $tag" --notes "Self-signed internal test build. Importing its test certificate is required on a clean Windows machine. Do not promote this release to stable."
+
+      - name: Remove internal certificate
+        if: always()
+        shell: pwsh
+        working-directory: .
+        run: |
+          if (-not [string]::IsNullOrWhiteSpace($env:TEST_CERT_THUMBPRINT)) {
+            foreach ($store in @("My", "Root", "TrustedPublisher")) {
+              Remove-Item -LiteralPath "Cert:\CurrentUser\$store\$env:TEST_CERT_THUMBPRINT" -Force -ErrorAction SilentlyContinue
+            }
+          }
+          Remove-Item -LiteralPath $env:TEST_PFX_PATH -Force -ErrorAction SilentlyContinue
+          Remove-Item -LiteralPath (Join-Path $env:RUNNER_TEMP "retro-messenger-internal-test.cer") -Force -ErrorAction SilentlyContinue
