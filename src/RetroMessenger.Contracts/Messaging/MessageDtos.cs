@@ -18,6 +18,10 @@ public sealed record MessageDto(
 
 public sealed record SendMessageResponse(MessageDto Message, bool IsDuplicate);
 
+public sealed record CreateDirectConversationRequest(Guid TargetUserId);
+
+public sealed record CreateGroupConversationRequest(string Title, IReadOnlyCollection<Guid> MemberIds);
+
 public sealed record ConversationDto(
     Guid Id,
     string Title,

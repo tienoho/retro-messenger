@@ -60,6 +60,34 @@ export interface ConversationDto {
   memberIds: string[];
 }
 
+export interface CreateDirectConversationRequest {
+  targetUserId: string;
+}
+
+export interface CreateGroupConversationRequest {
+  title: string;
+  memberIds: string[];
+}
+
+export interface RoomDto {
+  id: string;
+  title: string;
+  description: string;
+  memberCount: number;
+  isPublic: boolean;
+}
+
+export interface CreateRoomRequest {
+  title: string;
+  description: string;
+  isPublic: boolean;
+}
+
+export interface JoinRoomResponse {
+  message: string;
+  conversation?: ConversationDto | null;
+}
+
 export interface MessageDto {
   id: string;
   conversationId: string;

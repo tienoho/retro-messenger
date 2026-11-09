@@ -17,7 +17,19 @@ public sealed class UserService(
 
     public async Task<UserDto> UpdateProfileAsync(Guid userId, UpdateProfileRequest request, CancellationToken cancellationToken = default)
     {
-        return await userRepo.UpdateAsync(userId, request.DisplayName.Trim(), request.CustomStatus?.Trim(), "online", cancellationToken);
+        var existing = await userRepo.GetByIdAsync(userId, cancellationToken);
+        var status = existing?.Status ?? "online";
+        var updated = await userRepo.UpdateAsync(userId, request.DisplayName.Trim(), request.CustomStatus?.Trim(), status, cancellationToken);
+        if (presencePublisher is not null)
+        {
+            await presencePublisher.PublishAsync(
+                userId,
+                updated.Status,
+                updated.CustomStatus,
+                DateTimeOffset.UtcNow,
+                cancellationToken);
+        }
+        return updated;
     }
 
     public async Task<UserDto> UpdateStatusAsync(Guid userId, UpdateStatusRequest request, CancellationToken cancellationToken = default)

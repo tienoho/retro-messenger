@@ -1,0 +1,17 @@
+{
+  "name": "retro-messenger",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm --dir clients dev:web",
+    "dev:web": "pnpm --dir clients dev:web",
+    "dev:all": "pnpm --dir clients dev",
+    "dev:admin": "pnpm --dir clients dev:admin",
+    "dev:desktop": "pnpm --dir clients dev:desktop",
+    "build": "pnpm --dir clients build",
+    "build:web": "pnpm --dir clients --filter @retro/web build",
+    "typecheck": "pnpm --dir clients typecheck",
+    "test": "pnpm --dir clients test",
+    "lint": "pnpm --dir clients lint"
+  }
+}
+

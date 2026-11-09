@@ -1,5 +1,6 @@
 import React from "react";
 import type { AttachmentMetadata } from "@retro/contracts";
+import { IconFile } from "../../icons/UiIcons";
 
 export interface AttachmentPreviewCardProps {
   attachment: AttachmentMetadata;
@@ -22,7 +23,9 @@ export function AttachmentPreviewCard({
         {isImage && attachment.url ? (
           <img src={attachment.url} alt={attachment.fileName} />
         ) : (
-          <span className="fileIcon">📄</span>
+          <span className="fileIcon">
+            <IconFile size={20} />
+          </span>
         )}
       </div>
 

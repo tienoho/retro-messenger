@@ -9,13 +9,17 @@ import type {
   BlockedContactDto,
   ContactRequestStateDto,
   ConversationDto,
+  CreateRoomRequest,
   FriendDto,
   FriendRequestDto,
+  JoinRoomResponse,
   MessageDto,
   PresignedDownloadUrlResponse,
   PresignedUploadUrlResponse,
+  RoomDto,
   SendMessageResponse,
   SessionDto,
+  UserDto,
 } from "@retro/contracts";
 
 export class RetroApiError extends Error {
@@ -179,6 +183,49 @@ export class RetroApiClient {
     return this.request<ConversationDto[]>("/api/v1/conversations");
   }
 
+  public createDirectConversation(
+    targetUserId: string,
+  ): Promise<ConversationDto> {
+    return this.request<ConversationDto>(
+      "/api/v1/conversations/direct",
+      {
+        method: "POST",
+        body: JSON.stringify({ targetUserId }),
+      },
+    );
+  }
+
+  public createGroupConversation(
+    title: string,
+    memberIds: string[],
+  ): Promise<ConversationDto> {
+    return this.request<ConversationDto>(
+      "/api/v1/conversations",
+      {
+        method: "POST",
+        body: JSON.stringify({ title, memberIds }),
+      },
+    );
+  }
+
+  public listPublicRooms(): Promise<RoomDto[]> {
+    return this.request<RoomDto[]>("/api/v1/rooms/public");
+  }
+
+  public createRoom(request: CreateRoomRequest): Promise<RoomDto> {
+    return this.request<RoomDto>("/api/v1/rooms", {
+      method: "POST",
+      body: JSON.stringify(request),
+    });
+  }
+
+  public joinRoom(roomId: string): Promise<JoinRoomResponse> {
+    return this.request<JoinRoomResponse>(
+      `/api/v1/rooms/${encodeURIComponent(roomId)}/join`,
+      { method: "POST" },
+    );
+  }
+
   public listMessages(
     conversationId: string,
     afterSequence?: number,
@@ -210,6 +257,16 @@ export class RetroApiClient {
     return this.request<{ status: string }>("/api/v1/users/me/status", {
       method: "PUT",
       body: JSON.stringify({ status }),
+    });
+  }
+
+  public updateProfile(
+    displayName: string,
+    customStatus?: string | null,
+  ): Promise<UserDto> {
+    return this.request<UserDto>("/api/v1/users/me/profile", {
+      method: "PUT",
+      body: JSON.stringify({ displayName, customStatus }),
     });
   }
 

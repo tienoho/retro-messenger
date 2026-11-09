@@ -10,13 +10,24 @@ public sealed class RoomService(IRoomRepository roomRepo)
         return await roomRepo.GetPublicRoomsAsync(cancellationToken);
     }
 
-    public async Task<RoomDto> CreateRoomAsync(CreateRoomRequest request, CancellationToken cancellationToken = default)
+    public async Task<RoomDto> CreateRoomAsync(
+        CreateRoomRequest request,
+        Guid ownerId,
+        CancellationToken cancellationToken = default)
     {
-        return await roomRepo.CreateRoomAsync(request.Title.Trim(), request.Description.Trim(), request.IsPublic, cancellationToken);
+        return await roomRepo.CreateRoomAsync(
+            request.Title.Trim(),
+            request.Description.Trim(),
+            request.IsPublic,
+            ownerId,
+            cancellationToken);
     }
 
-    public static Task JoinRoomAsync(Guid roomId, CancellationToken cancellationToken = default)
+    public async Task<bool> JoinRoomAsync(
+        Guid roomId,
+        Guid userId,
+        CancellationToken cancellationToken = default)
     {
-        return Task.CompletedTask;
+        return await roomRepo.JoinRoomAsync(roomId, userId, cancellationToken);
     }
 }

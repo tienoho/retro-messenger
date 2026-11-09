@@ -46,4 +46,63 @@ public sealed class InMemoryConversationRepository : IConversationRepository
             return Task.FromResult(item.NextSequence());
         }
     }
+
+    public Task<Conversation> GetOrCreateDirectConversationAsync(
+        Guid currentUserId,
+        Guid targetUserId,
+        string title,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        var existing = _items.Values.FirstOrDefault(c =>
+            c.MemberIds.Count == 2 &&
+            c.HasMember(currentUserId) &&
+            c.HasMember(targetUserId));
+
+        if (existing is not null)
+        {
+            return Task.FromResult(existing);
+        }
+
+        var newConv = new Conversation(
+            Guid.CreateVersion7(),
+            title,
+            new[] { currentUserId, targetUserId });
+
+        _items[newConv.Id] = newConv;
+        return Task.FromResult(newConv);
+    }
+
+    public Task<Conversation> CreateConversationAsync(
+        string title,
+        short conversationType,
+        IEnumerable<Guid> memberIds,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        var newConv = new Conversation(
+            Guid.CreateVersion7(),
+            title,
+            memberIds);
+
+        _items[newConv.Id] = newConv;
+        return Task.FromResult(newConv);
+    }
+
+    public Task AddMemberAsync(
+        Guid conversationId,
+        Guid userId,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        if (_items.TryGetValue(conversationId, out var conv))
+        {
+            conv.AddMember(userId);
+        }
+
+        return Task.CompletedTask;
+    }
 }

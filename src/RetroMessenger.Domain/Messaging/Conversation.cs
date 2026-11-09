@@ -12,7 +12,7 @@ public sealed class Conversation
         if (string.IsNullOrWhiteSpace(title)) throw new DomainException("Conversation title is required.");
 
         _memberIds = memberIds.Where(x => x != Guid.Empty).ToHashSet();
-        if (_memberIds.Count < 2) throw new DomainException("A conversation requires at least two members.");
+        if (_memberIds.Count < 1) throw new DomainException("A conversation requires at least one member.");
 
         Id = id;
         Title = title.Trim();
@@ -24,6 +24,12 @@ public sealed class Conversation
     public IReadOnlySet<Guid> MemberIds => _memberIds;
 
     public bool HasMember(Guid userId) => _memberIds.Contains(userId);
+
+    public bool AddMember(Guid userId)
+    {
+        if (userId == Guid.Empty) return false;
+        return _memberIds.Add(userId);
+    }
 
     public long NextSequence()
     {

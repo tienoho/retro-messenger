@@ -1,4 +1,6 @@
+using RetroMessenger.Application.Abstractions;
 using RetroMessenger.Application.Rooms;
+using RetroMessenger.Contracts.Messaging;
 using RetroMessenger.Contracts.Rooms;
 
 namespace RetroMessenger.Api.Endpoints;
@@ -15,16 +17,34 @@ public static class RoomEndpoints
             return Results.Ok(rooms);
         });
 
-        group.MapPost("/", async (CreateRoomRequest request, RoomService roomService, CancellationToken ct) =>
+        group.MapPost("/", async (
+            CreateRoomRequest request,
+            ICurrentUserContext currentUser,
+            RoomService roomService,
+            CancellationToken ct) =>
         {
-            var room = await roomService.CreateRoomAsync(request, ct);
+            var room = await roomService.CreateRoomAsync(request, currentUser.UserId, ct);
             return Results.Ok(room);
         }).RequireAuthorization();
 
-        group.MapPost("/{id:guid}/join", async (Guid id, CancellationToken ct) =>
+        group.MapPost("/{id:guid}/join", async (
+            Guid id,
+            ICurrentUserContext currentUser,
+            RoomService roomService,
+            IConversationRepository conversationRepository,
+            CancellationToken ct) =>
         {
-            await RoomService.JoinRoomAsync(id, ct);
-            return Results.Ok(new { message = "Joined room successfully." });
+            await roomService.JoinRoomAsync(id, currentUser.UserId, ct);
+            var conv = await conversationRepository.GetAsync(id, ct);
+            var conversationDto = conv is null
+                ? null
+                : new ConversationDto(conv.Id, conv.Title, conv.LastSequence, conv.MemberIds.ToArray());
+
+            return Results.Ok(new
+            {
+                message = "Joined room successfully.",
+                conversation = conversationDto
+            });
         }).RequireAuthorization();
 
         return endpoints;

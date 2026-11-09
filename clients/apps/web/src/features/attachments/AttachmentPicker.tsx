@@ -1,4 +1,5 @@
 import React, { useRef } from "react";
+import { IconPaperclip } from "../../icons/UiIcons";
 
 export interface AttachmentPickerProps {
   onFileSelect: (file: File) => void;
@@ -41,7 +42,8 @@ export function AttachmentPicker({
         disabled={disabled}
         title="Đính kèm tệp tin"
       >
-        📎 Tệp
+        <IconPaperclip size={13} style={{ marginRight: 3, verticalAlign: "middle" }} />
+        Tệp
       </button>
     </div>
   );

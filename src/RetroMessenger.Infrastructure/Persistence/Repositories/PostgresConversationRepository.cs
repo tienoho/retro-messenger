@@ -85,4 +85,99 @@ public sealed class PostgresConversationRepository(MessengerDbContext db) : ICon
 
         return result.Value;
     }
+
+    public async Task<Conversation> GetOrCreateDirectConversationAsync(
+        Guid currentUserId,
+        Guid targetUserId,
+        string title,
+        CancellationToken cancellationToken)
+    {
+        var existing = await db.Conversations
+            .Include(c => c.Members)
+            .Where(c => c.ConversationType == 1 &&
+                        c.Members.Any(m => m.UserId == currentUserId) &&
+                        c.Members.Any(m => m.UserId == targetUserId))
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (existing is not null)
+        {
+            return new Conversation(
+                existing.Id,
+                existing.Title,
+                existing.Members.Select(m => m.UserId));
+        }
+
+        var id = Guid.CreateVersion7();
+        var conversationEntity = new ConversationEntity
+        {
+            Id = id,
+            Title = title,
+            ConversationType = 1,
+            LastSequence = 0,
+            CreatedAt = DateTimeOffset.UtcNow,
+            UpdatedAt = DateTimeOffset.UtcNow,
+            Members = new List<ConversationMemberEntity>
+            {
+                new() { ConversationId = id, UserId = currentUserId, JoinedAt = DateTimeOffset.UtcNow },
+                new() { ConversationId = id, UserId = targetUserId, JoinedAt = DateTimeOffset.UtcNow }
+            }
+        };
+
+        db.Conversations.Add(conversationEntity);
+        await db.SaveChangesAsync(cancellationToken);
+
+        return new Conversation(
+            conversationEntity.Id,
+            conversationEntity.Title,
+            conversationEntity.Members.Select(m => m.UserId));
+    }
+
+    public async Task<Conversation> CreateConversationAsync(
+        string title,
+        short conversationType,
+        IEnumerable<Guid> memberIds,
+        CancellationToken cancellationToken)
+    {
+        var id = Guid.CreateVersion7();
+        var membersList = memberIds.Distinct().ToList();
+        var entity = new ConversationEntity
+        {
+            Id = id,
+            Title = title,
+            ConversationType = conversationType,
+            LastSequence = 0,
+            CreatedAt = DateTimeOffset.UtcNow,
+            UpdatedAt = DateTimeOffset.UtcNow,
+            Members = membersList.Select(m => new ConversationMemberEntity
+            {
+                ConversationId = id,
+                UserId = m,
+                JoinedAt = DateTimeOffset.UtcNow
+            }).ToList()
+        };
+
+        db.Conversations.Add(entity);
+        await db.SaveChangesAsync(cancellationToken);
+
+        return new Conversation(entity.Id, entity.Title, entity.Members.Select(m => m.UserId));
+    }
+
+    public async Task AddMemberAsync(
+        Guid conversationId,
+        Guid userId,
+        CancellationToken cancellationToken)
+    {
+        var exists = await db.ConversationMembers
+            .AnyAsync(m => m.ConversationId == conversationId && m.UserId == userId, cancellationToken);
+        if (!exists)
+        {
+            db.ConversationMembers.Add(new ConversationMemberEntity
+            {
+                ConversationId = conversationId,
+                UserId = userId,
+                JoinedAt = DateTimeOffset.UtcNow
+            });
+            await db.SaveChangesAsync(cancellationToken);
+        }
+    }
 }
