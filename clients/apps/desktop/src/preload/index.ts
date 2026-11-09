@@ -1,8 +1,15 @@
 import { contextBridge, ipcRenderer } from "electron";
 import type {
+  CallAnswerEvent,
+  CallEndedEvent,
+  CallOfferEvent,
+  CallStartedEvent,
   DesktopTransferProgress,
   DesktopUpdaterState,
+  IceCandidateEvent,
   MessageDto,
+  ParticipantJoinedEvent,
+  ParticipantLeftEvent,
   PresenceChangedEvent,
 } from "@retro/contracts";
 import {
@@ -17,7 +24,12 @@ import {
   type DesktopRespondFriendRequest,
   type DesktopSendFriendRequest,
   type DesktopStatusRequest,
+  type DesktopUpdateProfileRequest,
   type DesktopTypingEvent,
+  type DesktopStartCallRequest,
+  type DesktopCallOfferRequest,
+  type DesktopCallAnswerRequest,
+  type DesktopIceCandidateRequest,
   type RetroDesktopBridge,
 } from "../shared/ipc-contracts.ts";
 
@@ -62,6 +74,34 @@ const bridge: RetroDesktopBridge = {
     subscribe(desktopChannels.buzzReceived, listener),
   onPresenceChanged: (listener: (event: PresenceChangedEvent) => void) =>
     subscribe(desktopChannels.presenceChanged, listener),
+  startCall: (request: DesktopStartCallRequest) =>
+    ipcRenderer.invoke(desktopChannels.startCall, request),
+  endCall: (request: DesktopConversationRequest) =>
+    ipcRenderer.invoke(desktopChannels.endCall, request),
+  joinCall: (request: DesktopConversationRequest) =>
+    ipcRenderer.invoke(desktopChannels.joinCall, request),
+  leaveCall: (request: DesktopConversationRequest) =>
+    ipcRenderer.invoke(desktopChannels.leaveCall, request),
+  sendCallOffer: (request: DesktopCallOfferRequest) =>
+    ipcRenderer.invoke(desktopChannels.sendCallOffer, request),
+  sendCallAnswer: (request: DesktopCallAnswerRequest) =>
+    ipcRenderer.invoke(desktopChannels.sendCallAnswer, request),
+  sendIceCandidate: (request: DesktopIceCandidateRequest) =>
+    ipcRenderer.invoke(desktopChannels.sendIceCandidate, request),
+  onCallStarted: (listener: (event: CallStartedEvent) => void) =>
+    subscribe(desktopChannels.callStarted, listener),
+  onCallEnded: (listener: (event: CallEndedEvent) => void) =>
+    subscribe(desktopChannels.callEnded, listener),
+  onParticipantJoined: (listener: (event: ParticipantJoinedEvent) => void) =>
+    subscribe(desktopChannels.participantJoined, listener),
+  onParticipantLeft: (listener: (event: ParticipantLeftEvent) => void) =>
+    subscribe(desktopChannels.participantLeft, listener),
+  onCallOfferReceived: (listener: (event: CallOfferEvent) => void) =>
+    subscribe(desktopChannels.callOfferReceived, listener),
+  onCallAnswerReceived: (listener: (event: CallAnswerEvent) => void) =>
+    subscribe(desktopChannels.callAnswerReceived, listener),
+  onIceCandidateReceived: (listener: (event: IceCandidateEvent) => void) =>
+    subscribe(desktopChannels.iceCandidateReceived, listener),
   listFriends: () => ipcRenderer.invoke(desktopChannels.listFriends),
   listContactRequests: () =>
     ipcRenderer.invoke(desktopChannels.listContactRequests),
@@ -77,6 +117,11 @@ const bridge: RetroDesktopBridge = {
     ipcRenderer.invoke(desktopChannels.unblockContact, request),
   updateStatus: (request: DesktopStatusRequest) =>
     ipcRenderer.invoke(desktopChannels.updateStatus, request),
+  updateProfile: (request: DesktopUpdateProfileRequest) =>
+    ipcRenderer.invoke(desktopChannels.updateProfile, request),
+  minimizeWindow: () => ipcRenderer.invoke(desktopChannels.minimizeWindow),
+  maximizeWindow: () => ipcRenderer.invoke(desktopChannels.maximizeWindow),
+  closeWindow: () => ipcRenderer.invoke(desktopChannels.closeWindow),
   clearLocalData: () => ipcRenderer.invoke(desktopChannels.clearLocalData),
   selectAndUploadAttachment: (request: DesktopConversationRequest) =>
     ipcRenderer.invoke(desktopChannels.selectAndUploadAttachment, request),

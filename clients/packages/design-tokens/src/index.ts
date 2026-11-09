@@ -148,3 +148,66 @@ export const YAHOO_TEXT_COLORS = [
   "#2e8b57", // Sea Green
   "#b22222", // Firebrick
 ] as const;
+
+export interface YahooSkinDefinition {
+  id: string;
+  name: string;
+  primaryGradient: string;
+  windowBg: string;
+  border: string;
+  accent: string;
+}
+
+export const YAHOO_SKINS: YahooSkinDefinition[] = [
+  {
+    id: "purple",
+    name: "Tím Yahoo! Classic",
+    primaryGradient: "linear-gradient(180deg, #6c238f 0%, #541973 45%, #42125d 50%, #5d1f7e 100%)",
+    windowBg: "#ede7f6",
+    border: "#5b1e84",
+    accent: "#fed633",
+  },
+  {
+    id: "silver",
+    name: "Bạc Ánh Kim (Windows XP)",
+    primaryGradient: "linear-gradient(180deg, #7b889b 0%, #616e81 45%, #4e5b6e 50%, #6d7b8f 100%)",
+    windowBg: "#ece9d8",
+    border: "#4b5563",
+    accent: "#ffd700",
+  },
+  {
+    id: "blue",
+    name: "Xanh Biển Aqua",
+    primaryGradient: "linear-gradient(180deg, #1d6fa5 0%, #0d5485 45%, #084068 50%, #166496 100%)",
+    windowBg: "#e0f2fe",
+    border: "#0369a1",
+    accent: "#facc15",
+  },
+  {
+    id: "emerald",
+    name: "Xanh Lục Bảo",
+    primaryGradient: "linear-gradient(180deg, #15803d 0%, #166534 45%, #14532d 50%, #16a34a 100%)",
+    windowBg: "#f0fdf4",
+    border: "#15803d",
+    accent: "#fde047",
+  },
+  {
+    id: "sunset",
+    name: "Cam Ánh Hoàng Hôn",
+    primaryGradient: "linear-gradient(180deg, #c2410c 0%, #9a3412 45%, #7c2d12 50%, #ea580c 100%)",
+    windowBg: "#fff7ed",
+    border: "#9a3412",
+    accent: "#fef08a",
+  },
+];
+
+export const YAHOO_MUSIC_STATUSES = [
+  "♫ Đang nghe: Ước Gì - Mỹ Tâm",
+  "♫ Đang nghe: Chiếc Khăn Gió Ấm - Khánh Phương",
+  "♫ Đang nghe: Công Chúa Bong Bóng - Bảo Thy",
+  "♫ Đang nghe: Xe Đạp - Thùy Chi & M4U",
+  "♫ Đang nghe: Cầu Vồng Khuyết - Tuấn Hưng",
+  "♫ Đang nghe: Bối Rối - Đông Nhi",
+  "♫ Đang nghe: Ngôi Nhà Hoa Hồng - Quang Vinh ft. Bảo Thy",
+  "♫ Đang nghe: Bay Giữa Ngân Hà - Nam Cường",
+] as const;

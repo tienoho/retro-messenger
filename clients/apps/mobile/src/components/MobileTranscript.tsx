@@ -17,12 +17,24 @@ export function MobileTranscript({ session, messages }: MobileTranscriptProps) {
         const mine = item.senderId === session.user.id;
         const isBuzz =
           item.content === "BUZZ!!!" || item.content === "(BUZZ)";
+        const isAudible = item.content.startsWith("[Audible]");
 
         if (isBuzz) {
           return (
             <View style={styles.buzzBanner}>
               <Text style={styles.buzzText}>
                 BUZZ! {mine ? "BẠN VỪA GỬI BUZZ!" : "BẠN NHẬN ĐƯỢC MỘT BUZZ!"}
+              </Text>
+            </View>
+          );
+        }
+
+        if (isAudible) {
+          return (
+            <View style={styles.audibleBanner}>
+              <Text style={styles.audibleText}>
+                {mine ? "Bạn gửi Audible: " : "Đối phương gửi Audible: "}
+                {item.content}
               </Text>
             </View>
           );
@@ -39,6 +51,7 @@ export function MobileTranscript({ session, messages }: MobileTranscriptProps) {
               {mine ? "Bạn: " : "Bạn bè: "}
               <Text style={styles.messageContent}>{item.content}</Text>
             </Text>
+            <Text style={styles.seqText}>#{item.sequence}</Text>
           </View>
         );
       }}
@@ -52,10 +65,13 @@ const styles = StyleSheet.create({
     marginBottom: 6,
     flexDirection: "row",
     flexWrap: "wrap",
+    alignItems: "baseline",
+    justifyContent: "space-between",
   },
   senderLabel: {
     fontSize: 13,
     fontWeight: "700",
+    flex: 1,
   },
   senderMine: {
     color: "#0000cc",
@@ -67,18 +83,36 @@ const styles = StyleSheet.create({
     color: "#111111",
     fontWeight: "400",
   },
+  seqText: {
+    fontSize: 9,
+    color: "#aaaaaa",
+    marginLeft: 6,
+  },
   buzzBanner: {
     backgroundColor: "#fff0f0",
     borderWidth: 1,
     borderColor: "#ff9999",
     borderRadius: 4,
-    padding: 6,
+    padding: 8,
     marginVertical: 6,
     alignItems: "center",
   },
   buzzText: {
     color: "#cc0000",
-    fontWeight: "800",
+    fontWeight: "900",
+    fontSize: 12,
+  },
+  audibleBanner: {
+    backgroundColor: "#fff7ed",
+    borderWidth: 1,
+    borderColor: "#fed7aa",
+    borderRadius: 4,
+    padding: 8,
+    marginVertical: 4,
+  },
+  audibleText: {
+    color: "#9a3412",
+    fontWeight: "700",
     fontSize: 12,
   },
 });

@@ -417,6 +417,41 @@ export function YahooLogoIcon({ size = 14, ...props }: UiIconProps) {
 
 export const StatusDotAvailable = StatusDotOnline;
 
+// 17. Game Controller / Yahoo! Games
+export function IconGame({ size = 14, ...props }: UiIconProps) {
+  const s = typeof size === "number" ? `${size}px` : size;
+  return (
+    <svg width={s} height={s} viewBox="0 0 16 16" fill="none" style={{ display: "inline-block", verticalAlign: "middle" }} {...props}>
+      <path
+        d="M3 4 C2 4 1 5 1 7 L2 12 C2.3 13.5 4 13.5 5 12 L6.5 10 H9.5 L11 12 C12 13.5 13.7 13.5 14 12 L15 7 C15 5 14 4 13 4 H3 Z"
+        fill="#7c3aed"
+        stroke="#5b21b6"
+        strokeWidth="1"
+      />
+      {/* D-pad */}
+      <line x1="4.5" y1="6.5" x2="4.5" y2="9.5" stroke="#ffffff" strokeWidth="1.2" strokeLinecap="round" />
+      <line x1="3" y1="8" x2="6" y2="8" stroke="#ffffff" strokeWidth="1.2" strokeLinecap="round" />
+      {/* Action buttons */}
+      <circle cx="11.5" cy="7" r="0.8" fill="#fed633" />
+      <circle cx="13" cy="8.5" r="0.8" fill="#ef4444" />
+      <circle cx="10" cy="8.5" r="0.8" fill="#22c55e" />
+      <circle cx="11.5" cy="10" r="0.8" fill="#3b82f6" />
+    </svg>
+  );
+}
+
+// 18. Theme Brush
+export function IconTheme({ size = 14, ...props }: UiIconProps) {
+  const s = typeof size === "number" ? `${size}px` : size;
+  return (
+    <svg width={s} height={s} viewBox="0 0 16 16" fill="none" style={{ display: "inline-block", verticalAlign: "middle" }} {...props}>
+      <path d="M2 13 C2 11 3 10 5 10 H11 V14 H2 Z" fill="#f59e0b" stroke="#b45309" strokeWidth="0.8" />
+      <path d="M5 10 V4 C5 3 6 2 7 2 H9 C10 2 11 3 11 4 V10" fill="#9333ea" stroke="#6b21a8" strokeWidth="0.8" />
+      <circle cx="8" cy="12" r="1" fill="#ffffff" />
+    </svg>
+  );
+}
+
 // Helper to render status dot by string
 export function renderStatusIcon(status: string, size = 12) {
   switch (status.toLowerCase()) {

@@ -12,4 +12,7 @@ public interface IChatClient
     Task CallEnded(Guid conversationId, Guid endedById);
     Task ParticipantJoined(Guid conversationId, Guid userId);
     Task ParticipantLeft(Guid conversationId, Guid userId);
+    Task CallOfferReceived(Guid conversationId, Guid senderId, string sdp);
+    Task CallAnswerReceived(Guid conversationId, Guid senderId, string sdp);
+    Task IceCandidateReceived(Guid conversationId, Guid senderId, string candidate, string? sdpMid, int? sdpMLineIndex);
 }

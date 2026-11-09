@@ -19,6 +19,7 @@ export interface UseDesktopSessionResult {
   updateStatus: (
     status: "online" | "away" | "busy" | "invisible",
   ) => Promise<void>;
+  updateCustomStatus: (customStatus: string | null) => Promise<void>;
   selectDemo: (user: string, pass: string) => void;
   setUpdater: (updater: DesktopUpdaterState) => void;
 }
@@ -90,6 +91,13 @@ export function useDesktopSession(): UseDesktopSessionResult {
     setSession(updated);
   }
 
+  async function updateCustomStatus(
+    customStatus: string | null,
+  ): Promise<void> {
+    const updated = await window.retroDesktop.updateProfile({ customStatus });
+    setSession(updated);
+  }
+
   function selectDemo(user: string, pass: string): void {
     setUsername(user);
     setPassword(pass);
@@ -108,6 +116,7 @@ export function useDesktopSession(): UseDesktopSessionResult {
     login,
     logout,
     updateStatus,
+    updateCustomStatus,
     selectDemo,
     setUpdater,
   };

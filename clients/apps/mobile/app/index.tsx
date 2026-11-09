@@ -3,6 +3,8 @@ import {
   ActivityIndicator,
   StyleSheet,
   Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MobileAuth } from "../src/components/MobileAuth";
@@ -23,10 +25,16 @@ export default function HomeScreen() {
     booting,
     busy,
     error,
+    isBuzzing,
+    typingUsers,
+    activeCall,
     setDraft,
     login,
     logout,
     send,
+    sendBuzz,
+    startCall,
+    endCall,
   } = useMobileChat();
 
   if (booting) {
@@ -57,22 +65,61 @@ export default function HomeScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView
+      style={[styles.container, isBuzzing && styles.containerBuzzing]}
+    >
       <MobileHeader
         session={session}
         busy={busy}
         onLogout={() => void logout()}
+        onStartCall={() => void startCall("audio")}
       />
+
+      {activeCall && (
+        <View style={styles.callBanner}>
+          <Text style={styles.callBannerTitle}>
+            Cuộc gọi {activeCall.callType === "video" ? "Video" : "Thoại"} đến!
+          </Text>
+          <View style={styles.callBannerActions}>
+            <TouchableOpacity
+              style={styles.callAcceptBtn}
+              onPress={() => {
+                void endCall();
+              }}
+            >
+              <Text style={styles.callBtnText}>Trả lời</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.callDeclineBtn}
+              onPress={() => void endCall()}
+            >
+              <Text style={styles.callBtnText}>Từ chối</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
 
       {error && <Text style={styles.workspaceError}>{error}</Text>}
 
       <MobileTranscript session={session} messages={messages} />
 
+      {typingUsers.size > 0 && (
+        <View style={styles.typingContainer}>
+          <Text style={styles.typingText}>Đối phương đang soạn tin nhắn…</Text>
+        </View>
+      )}
+
       <MobileComposer
         conversationId={conversationId}
         draft={draft}
         onDraftChange={setDraft}
-        onSend={(custom) => void send(custom)}
+        onSend={(custom) => {
+          if (custom === "BUZZ!!!") {
+            void sendBuzz();
+          } else {
+            void send(custom);
+          }
+        }}
       />
     </SafeAreaView>
   );
@@ -80,6 +127,10 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#ede7f6" },
+  containerBuzzing: {
+    borderWidth: 4,
+    borderColor: "#ff0000",
+  },
   centered: {
     flex: 1,
     alignItems: "center",
@@ -94,5 +145,49 @@ const styles = StyleSheet.create({
     color: "#cc0000",
     backgroundColor: "#fff0f0",
     fontSize: 12,
+  },
+  callBanner: {
+    backgroundColor: "#7c3aed",
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  callBannerTitle: {
+    color: "#ffffff",
+    fontWeight: "bold",
+    fontSize: 13,
+  },
+  callBannerActions: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  callAcceptBtn: {
+    backgroundColor: "#16a34a",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 4,
+  },
+  callDeclineBtn: {
+    backgroundColor: "#dc2626",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 4,
+  },
+  callBtnText: {
+    color: "#ffffff",
+    fontWeight: "bold",
+    fontSize: 11,
+  },
+  typingContainer: {
+    paddingHorizontal: 14,
+    paddingVertical: 4,
+    backgroundColor: "#f5f3ff",
+  },
+  typingText: {
+    color: "#6b21a8",
+    fontSize: 11,
+    fontStyle: "italic",
   },
 });

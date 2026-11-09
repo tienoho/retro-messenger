@@ -3,6 +3,7 @@ import type {
   DesktopTransferProgress,
   MessageDto,
 } from "@retro/contracts";
+import type { ImvironmentDefinition } from "@retro/design-tokens";
 import type { DesktopOutboxEntry } from "../../shared/ipc-contracts.ts";
 import { DesktopMessageItem } from "./DesktopMessageItem";
 
@@ -13,6 +14,7 @@ export interface DesktopTranscriptProps {
   currentUserId?: string | undefined;
   transfer: DesktopTransferProgress | null;
   error: string | null;
+  imvironment?: ImvironmentDefinition | undefined;
   onDownloadAttachment: (attachmentId: string, fileName: string) => Promise<void>;
 }
 
@@ -23,11 +25,23 @@ export function DesktopTranscript({
   currentUserId,
   transfer,
   error,
+  imvironment,
   onDownloadAttachment,
 }: DesktopTranscriptProps) {
   return (
     <>
-      <div className="history" aria-live="polite">
+      <div
+        className="history"
+        aria-live="polite"
+        style={
+          imvironment
+            ? {
+                background: imvironment.background,
+                color: imvironment.textColor ?? "#202020",
+              }
+            : undefined
+        }
+      >
         {!active && (
           <p className="emptyState">Chưa có cuộc trò chuyện nào.</p>
         )}

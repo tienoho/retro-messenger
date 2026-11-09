@@ -1,4 +1,4 @@
-import { ipcMain, Notification, type IpcMainInvokeEvent } from "electron";
+import { ipcMain, Notification, BrowserWindow, type IpcMainInvokeEvent } from "electron";
 import type { DesktopAttachmentManager } from "../attachment-manager.ts";
 import type { DesktopDatabase } from "../database/desktop-database.ts";
 import type { DesktopOutboxProcessor } from "../outbox-processor.ts";
@@ -16,6 +16,7 @@ import {
   type DesktopRespondFriendRequest,
   type DesktopSendFriendRequest,
   type DesktopStatusRequest,
+  type DesktopUpdateProfileRequest,
 } from "../../shared/ipc-contracts.ts";
 import {
   validateConversationRequest,
@@ -27,6 +28,11 @@ import {
   validateRespondFriendRequest,
   validateSendFriendRequest,
   validateStatusRequest,
+  validateUpdateProfileRequest,
+  validateStartCallRequest,
+  validateCallOfferRequest,
+  validateCallAnswerRequest,
+  validateIceCandidateRequest,
 } from "./validation.ts";
 import { isTrustedRendererFrame } from "./sender-validation.ts";
 
@@ -167,6 +173,47 @@ export function registerDesktopIpcHandlers({
     return realtime.sendBuzz(request.conversationId);
   });
 
+  ipcMain.handle(desktopChannels.startCall, (event, raw: unknown) => {
+    assertTrustedSender(event, expectedRendererUrl);
+    const request = validateStartCallRequest(raw);
+    return realtime.startCall(request.conversationId, request.callType);
+  });
+  ipcMain.handle(desktopChannels.endCall, (event, raw: unknown) => {
+    assertTrustedSender(event, expectedRendererUrl);
+    const request = validateConversationRequest(raw);
+    return realtime.endCall(request.conversationId);
+  });
+  ipcMain.handle(desktopChannels.joinCall, (event, raw: unknown) => {
+    assertTrustedSender(event, expectedRendererUrl);
+    const request = validateConversationRequest(raw);
+    return realtime.joinCall(request.conversationId);
+  });
+  ipcMain.handle(desktopChannels.leaveCall, (event, raw: unknown) => {
+    assertTrustedSender(event, expectedRendererUrl);
+    const request = validateConversationRequest(raw);
+    return realtime.leaveCall(request.conversationId);
+  });
+  ipcMain.handle(desktopChannels.sendCallOffer, (event, raw: unknown) => {
+    assertTrustedSender(event, expectedRendererUrl);
+    const request = validateCallOfferRequest(raw);
+    return realtime.sendCallOffer(request.conversationId, request.sdp);
+  });
+  ipcMain.handle(desktopChannels.sendCallAnswer, (event, raw: unknown) => {
+    assertTrustedSender(event, expectedRendererUrl);
+    const request = validateCallAnswerRequest(raw);
+    return realtime.sendCallAnswer(request.conversationId, request.sdp);
+  });
+  ipcMain.handle(desktopChannels.sendIceCandidate, (event, raw: unknown) => {
+    assertTrustedSender(event, expectedRendererUrl);
+    const request = validateIceCandidateRequest(raw);
+    return realtime.sendIceCandidate(
+      request.conversationId,
+      request.candidate,
+      request.sdpMid,
+      request.sdpMLineIndex,
+    );
+  });
+
   ipcMain.handle(desktopChannels.listFriends, (event) => {
     assertTrustedSender(event, expectedRendererUrl);
     return session.listFriends();
@@ -211,6 +258,39 @@ export function registerDesktopIpcHandlers({
     const request: DesktopStatusRequest = validateStatusRequest(raw);
     await session.updateStatus(request.status);
     return session.getState();
+  });
+  ipcMain.handle(desktopChannels.updateProfile, async (event, raw: unknown) => {
+    assertTrustedSender(event, expectedRendererUrl);
+    const request: DesktopUpdateProfileRequest = validateUpdateProfileRequest(raw);
+    const currentUser = session.getState().user;
+    if (currentUser) {
+      await session.updateProfile(
+        request.displayName ?? currentUser.displayName,
+        request.customStatus,
+      );
+    }
+    return session.getState();
+  });
+  ipcMain.handle(desktopChannels.minimizeWindow, (event) => {
+    assertTrustedSender(event, expectedRendererUrl);
+    const win = BrowserWindow.fromWebContents(event.sender);
+    win?.minimize();
+  });
+  ipcMain.handle(desktopChannels.maximizeWindow, (event) => {
+    assertTrustedSender(event, expectedRendererUrl);
+    const win = BrowserWindow.fromWebContents(event.sender);
+    if (win) {
+      if (win.isMaximized()) {
+        win.unmaximize();
+      } else {
+        win.maximize();
+      }
+    }
+  });
+  ipcMain.handle(desktopChannels.closeWindow, (event) => {
+    assertTrustedSender(event, expectedRendererUrl);
+    const win = BrowserWindow.fromWebContents(event.sender);
+    win?.close();
   });
   ipcMain.handle(desktopChannels.clearLocalData, (event) => {
     assertTrustedSender(event, expectedRendererUrl);

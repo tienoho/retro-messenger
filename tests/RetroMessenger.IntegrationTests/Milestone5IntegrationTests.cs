@@ -589,6 +589,10 @@ public sealed class Milestone5IntegrationTests(PostgresAndRedisFixture fixture)
             ParticipantLeftEvents.Add((conversationId, userId));
             return Task.CompletedTask;
         }
+
+        public Task CallOfferReceived(Guid conversationId, Guid senderId, string sdp) => Task.CompletedTask;
+        public Task CallAnswerReceived(Guid conversationId, Guid senderId, string sdp) => Task.CompletedTask;
+        public Task IceCandidateReceived(Guid conversationId, Guid senderId, string candidate, string? sdpMid, int? sdpMLineIndex) => Task.CompletedTask;
     }
 
     private sealed class MockHubContext(IChatClient clientInstance) : IHubContext<ChatHub, IChatClient>

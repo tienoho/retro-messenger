@@ -4,7 +4,9 @@ import { RetroRealtimeClient } from "@retro/realtime-client";
 import type { ConversationDto, SessionDto } from "@retro/contracts";
 import {
   YAHOO_IMVIRONMENTS,
+  YAHOO_SKINS,
   type ImvironmentDefinition,
+  type YahooSkinDefinition,
   type YahooAudibleDefinition,
 } from "@retro/design-tokens";
 
@@ -19,6 +21,10 @@ import { AuthDialog } from "./components/auth/AuthDialog";
 import { WindowTitleBar } from "./components/chrome/WindowTitleBar";
 import { WindowMenuBar } from "./components/chrome/WindowMenuBar";
 import { AboutDialog } from "./components/chrome/AboutDialog";
+import { CustomStatusDialog } from "./components/chrome/CustomStatusDialog";
+import { SkinPickerDialog } from "./components/chrome/SkinPickerDialog";
+import { CaroGameDialog } from "./components/chat/CaroGameDialog";
+import { ChatTabs } from "./components/chat/ChatTabs";
 import { Sidebar } from "./components/sidebar/Sidebar";
 import { ChatTranscript } from "./components/chat/ChatTranscript";
 import { MessageComposer } from "./components/chat/MessageComposer";
@@ -91,6 +97,21 @@ export function App() {
   // Sound & Modals
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [showAboutDialog, setShowAboutDialog] = useState(false);
+  const [showCustomStatusDialog, setShowCustomStatusDialog] = useState(false);
+  const [showSkinDialog, setShowSkinDialog] = useState(false);
+  const [showGameDialog, setShowGameDialog] = useState(false);
+  const [openTabs, setOpenTabs] = useState<ConversationDto[]>([]);
+  const [currentSkin, setCurrentSkin] = useState<YahooSkinDefinition>(
+    YAHOO_SKINS[0] ?? {
+      id: "purple",
+      name: "Tím Yahoo! Classic",
+      primaryGradient:
+        "linear-gradient(180deg, #6c238f 0%, #541973 45%, #42125d 50%, #5d1f7e 100%)",
+      windowBg: "#ede7f6",
+      border: "#5b1e84",
+      accent: "#fed633",
+    },
+  );
 
   // Network & Status
   const [isOnline, setIsOnline] = useState(navigator.onLine);
@@ -314,7 +335,29 @@ export function App() {
       setAuthenticated(false);
       setSession(null);
       setActive(null);
+      setOpenTabs([]);
     }
+  };
+
+  // Sync open tabs with active conversation
+  useEffect(() => {
+    if (active) {
+      setOpenTabs((prev) => {
+        if (prev.some((t) => t.id === active.id)) return prev;
+        return [...prev, active];
+      });
+    }
+  }, [active]);
+
+  const handleCloseTab = (tabId: string) => {
+    setOpenTabs((prev) => {
+      const nextTabs = prev.filter((t) => t.id !== tabId);
+      if (active?.id === tabId) {
+        const nextActive = nextTabs[nextTabs.length - 1];
+        setActive(nextActive ?? null);
+      }
+      return nextTabs;
+    });
   };
 
   const handleStatusChange = async (nextStatus: string) => {
@@ -429,7 +472,16 @@ export function App() {
   }
 
   return (
-    <main className={`shell ${isBuzzing ? "bzzing" : ""}`}>
+    <main
+      className={`shell ${isBuzzing ? "bzzing" : ""}`}
+      style={
+        {
+          "--yahoo-purple-gradient": currentSkin.primaryGradient,
+          "--window-bg": currentSkin.windowBg,
+          "--window-border": currentSkin.border,
+        } as React.CSSProperties
+      }
+    >
       <WindowTitleBar
         title={`Retro! Messenger — ${session.user.displayName}`}
         isOnline={isOnline}
@@ -443,6 +495,9 @@ export function App() {
         onOpenAddFriend={() => void loadContacts()}
         onOpenRooms={() => void loadRooms()}
         onOpenAbout={() => setShowAboutDialog(true)}
+        onOpenCustomStatus={() => setShowCustomStatusDialog(true)}
+        onOpenSkinPicker={() => setShowSkinDialog(true)}
+        onOpenGame={() => setShowGameDialog(true)}
         onSendBuzz={active ? handleSendBuzz : undefined}
         onStartCall={
           active
@@ -475,11 +530,6 @@ export function App() {
           onStatusChange={handleStatusChange}
           onCustomStatusChange={handleCustomStatusChange}
           onSendBuzz={active ? handleSendBuzz : undefined}
-          onStartCall={(userId, name) => {
-            void handleStartChatWithFriend(userId, name).then(() => {
-              if (active) void call.startCall(active.id, "video");
-            });
-          }}
           hasActiveConversation={Boolean(active)}
           conversations={conversations}
           activeId={active?.id ?? null}
@@ -501,12 +551,29 @@ export function App() {
           onRespondRequest={respondRequest}
           onUnblock={unblockContact}
           onStartChat={handleStartChatWithFriend}
+          onStartCall={(friendUserId, friendDisplayName) => {
+            void handleStartChatWithFriend(friendUserId, friendDisplayName).then(() => {
+              // Wait for active conversation state then start call
+              setTimeout(() => {
+                const target = conversations.find((c) =>
+                  c.title.includes(friendDisplayName),
+                );
+                if (target) void call.startCall(target.id, "audio");
+              }, 150);
+            });
+          }}
           rooms={rooms}
           onCreateRoom={createRoom}
           onJoinRoom={joinRoom}
         />
 
         <section className="chat">
+          <ChatTabs
+            tabs={openTabs}
+            activeId={active?.id}
+            onSelectTab={setActive}
+            onCloseTab={handleCloseTab}
+          />
           <div className="imHeader">
             <div className="imRecipient">
               <div className="imRecipientAvatar">
@@ -600,6 +667,7 @@ export function App() {
             onSendAudible={handleSendAudible}
             currentImvironmentId={currentImvironment.id}
             onSelectImvironment={setCurrentImvironment}
+            onOpenGame={() => setShowGameDialog(true)}
             onFileSelect={(file) => active && void uploadFile(active.id, file)}
             disabled={!active}
             isUploading={isUploading}
@@ -609,6 +677,34 @@ export function App() {
           />
         </section>
       </div>
+
+      {showCustomStatusDialog && (
+        <CustomStatusDialog
+          currentCustomStatus={customStatus}
+          onSave={async (newStatus) => {
+            await handleCustomStatusChange(newStatus ?? "");
+          }}
+          onClose={() => setShowCustomStatusDialog(false)}
+        />
+      )}
+
+      {showSkinDialog && (
+        <SkinPickerDialog
+          currentSkinId={currentSkin.id}
+          onSelectSkin={setCurrentSkin}
+          onClose={() => setShowSkinDialog(false)}
+        />
+      )}
+
+      {showGameDialog && (
+        <CaroGameDialog
+          partnerName={active?.title ?? "Bạn bè"}
+          onClose={() => setShowGameDialog(false)}
+          onSendGameMessage={(text) => {
+            void sendMessage(text);
+          }}
+        />
+      )}
 
       {showAboutDialog && (
         <AboutDialog onClose={() => setShowAboutDialog(false)} />

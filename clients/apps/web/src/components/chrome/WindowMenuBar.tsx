@@ -10,6 +10,9 @@ import {
   IconPhone,
   IconRooms,
   IconInfo,
+  IconPencil,
+  IconPalette,
+  IconGame,
 } from "../../icons/UiIcons";
 
 export interface WindowMenuBarProps {
@@ -17,6 +20,9 @@ export interface WindowMenuBarProps {
   onOpenAddFriend: () => void;
   onOpenRooms: () => void;
   onOpenAbout: () => void;
+  onOpenCustomStatus?: (() => void) | undefined;
+  onOpenSkinPicker?: (() => void) | undefined;
+  onOpenGame?: (() => void) | undefined;
   onSendBuzz?: (() => void) | undefined;
   onStartCall?: (() => void) | undefined;
   onChangeStatus?:
@@ -29,6 +35,9 @@ export function WindowMenuBar({
   onOpenAddFriend,
   onOpenRooms,
   onOpenAbout,
+  onOpenCustomStatus,
+  onOpenSkinPicker,
+  onOpenGame,
   onSendBuzz,
   onStartCall,
   onChangeStatus,
@@ -95,6 +104,30 @@ export function WindowMenuBar({
               Ẩn (Invisible)
             </div>
             <div className="dropdownDivider" />
+            {onOpenCustomStatus && (
+              <div
+                className="dropdownItem"
+                onClick={() => {
+                  close();
+                  onOpenCustomStatus();
+                }}
+              >
+                <IconPencil size={12} style={{ marginRight: 6 }} />
+                Đổi lời nhắn cá nhân…
+              </div>
+            )}
+            {onOpenSkinPicker && (
+              <div
+                className="dropdownItem"
+                onClick={() => {
+                  close();
+                  onOpenSkinPicker();
+                }}
+              >
+                <IconPalette size={13} style={{ marginRight: 6 }} />
+                Đổi giao diện (Skins)…
+              </div>
+            )}
             <div
               className="dropdownItem"
               onClick={() => {
@@ -165,6 +198,18 @@ export function WindowMenuBar({
               >
                 <IconPhone size={13} style={{ marginRight: 6 }} />
                 Bắt đầu cuộc gọi (LiveKit Call)
+              </div>
+            )}
+            {onOpenGame && (
+              <div
+                className="dropdownItem"
+                onClick={() => {
+                  close();
+                  onOpenGame();
+                }}
+              >
+                <IconGame size={13} style={{ marginRight: 6 }} />
+                Chơi cờ Caro (Yahoo! Games)…
               </div>
             )}
             <div

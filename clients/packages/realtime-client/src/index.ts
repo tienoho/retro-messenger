@@ -6,8 +6,11 @@ import {
   type IHttpConnectionOptions,
 } from "@microsoft/signalr";
 import type {
+  CallAnswerEvent,
   CallEndedEvent,
+  CallOfferEvent,
   CallStartedEvent,
+  IceCandidateEvent,
   MessageDto,
   ParticipantJoinedEvent,
   ParticipantLeftEvent,
@@ -197,6 +200,82 @@ export class RetroRealtimeClient {
         listener(event);
       }
     });
+
+    this.connection.on(
+      "CallOfferReceived",
+      (arg1: unknown, arg2?: string, arg3?: string) => {
+        const record = eventRecord(arg1);
+        const event: CallOfferEvent = record
+          ? {
+              conversationId: stringField(record, "conversationId"),
+              senderId: stringField(record, "senderId"),
+              sdp: stringField(record, "sdp"),
+            }
+          : {
+              conversationId: String(arg1),
+              senderId: arg2 ?? "",
+              sdp: arg3 ?? "",
+            };
+        for (const listener of this.callOfferListeners) {
+          listener(event);
+        }
+      },
+    );
+
+    this.connection.on(
+      "CallAnswerReceived",
+      (arg1: unknown, arg2?: string, arg3?: string) => {
+        const record = eventRecord(arg1);
+        const event: CallAnswerEvent = record
+          ? {
+              conversationId: stringField(record, "conversationId"),
+              senderId: stringField(record, "senderId"),
+              sdp: stringField(record, "sdp"),
+            }
+          : {
+              conversationId: String(arg1),
+              senderId: arg2 ?? "",
+              sdp: arg3 ?? "",
+            };
+        for (const listener of this.callAnswerListeners) {
+          listener(event);
+        }
+      },
+    );
+
+    this.connection.on(
+      "IceCandidateReceived",
+      (
+        arg1: unknown,
+        arg2?: string,
+        arg3?: string,
+        arg4?: string,
+        arg5?: number,
+      ) => {
+        const record = eventRecord(arg1);
+        const event: IceCandidateEvent = record
+          ? {
+              conversationId: stringField(record, "conversationId"),
+              senderId: stringField(record, "senderId"),
+              candidate: stringField(record, "candidate"),
+              sdpMid: stringField(record, "sdpMid") || null,
+              sdpMLineIndex:
+                typeof record["sdpMLineIndex"] === "number"
+                  ? record["sdpMLineIndex"]
+                  : null,
+            }
+          : {
+              conversationId: String(arg1),
+              senderId: arg2 ?? "",
+              candidate: arg3 ?? "",
+              sdpMid: arg4 ?? null,
+              sdpMLineIndex: arg5 ?? null,
+            };
+        for (const listener of this.iceCandidateListeners) {
+          listener(event);
+        }
+      },
+    );
   }
 
   private readonly buzzListeners = new Set<
@@ -219,6 +298,15 @@ export class RetroRealtimeClient {
   >();
   private readonly participantLeftListeners = new Set<
     (event: ParticipantLeftEvent) => void
+  >();
+  private readonly callOfferListeners = new Set<
+    (event: CallOfferEvent) => void
+  >();
+  private readonly callAnswerListeners = new Set<
+    (event: CallAnswerEvent) => void
+  >();
+  private readonly iceCandidateListeners = new Set<
+    (event: IceCandidateEvent) => void
   >();
 
   public async start(): Promise<void> {
@@ -260,6 +348,33 @@ export class RetroRealtimeClient {
 
   public joinCall(conversationId: string): Promise<void> {
     return this.connection.invoke("JoinCall", conversationId);
+  }
+
+  public leaveCall(conversationId: string): Promise<void> {
+    return this.connection.invoke("LeaveCall", conversationId);
+  }
+
+  public sendCallOffer(conversationId: string, sdp: string): Promise<void> {
+    return this.connection.invoke("SendCallOffer", conversationId, sdp);
+  }
+
+  public sendCallAnswer(conversationId: string, sdp: string): Promise<void> {
+    return this.connection.invoke("SendCallAnswer", conversationId, sdp);
+  }
+
+  public sendIceCandidate(
+    conversationId: string,
+    candidate: string,
+    sdpMid?: string | null,
+    sdpMLineIndex?: number | null,
+  ): Promise<void> {
+    return this.connection.invoke(
+      "SendIceCandidate",
+      conversationId,
+      candidate,
+      sdpMid ?? null,
+      sdpMLineIndex ?? null,
+    );
   }
 
   public onMessage(listener: (message: MessageDto) => void): () => void {
@@ -340,6 +455,33 @@ export class RetroRealtimeClient {
     this.participantLeftListeners.add(listener);
     return () => {
       this.participantLeftListeners.delete(listener);
+    };
+  }
+
+  public onCallOffer(
+    listener: (event: CallOfferEvent) => void,
+  ): () => void {
+    this.callOfferListeners.add(listener);
+    return () => {
+      this.callOfferListeners.delete(listener);
+    };
+  }
+
+  public onCallAnswer(
+    listener: (event: CallAnswerEvent) => void,
+  ): () => void {
+    this.callAnswerListeners.add(listener);
+    return () => {
+      this.callAnswerListeners.delete(listener);
+    };
+  }
+
+  public onIceCandidate(
+    listener: (event: IceCandidateEvent) => void,
+  ): () => void {
+    this.iceCandidateListeners.add(listener);
+    return () => {
+      this.iceCandidateListeners.delete(listener);
     };
   }
 }

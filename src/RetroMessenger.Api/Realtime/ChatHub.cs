@@ -165,6 +165,51 @@ public sealed class ChatHub(
         }
     }
 
+    public async Task SendCallOffer(Guid conversationId, string sdp)
+    {
+        await EnsureMembershipAsync(conversationId);
+        var userId = CurrentUserId;
+        var conversation = await conversationRepository.GetAsync(conversationId, Context.ConnectionAborted);
+        if (conversation is not null)
+        {
+            foreach (var memberId in conversation.MemberIds.Where(m => m != userId))
+            {
+                await Clients.Group(UserGroup(memberId))
+                    .CallOfferReceived(conversationId, userId, sdp);
+            }
+        }
+    }
+
+    public async Task SendCallAnswer(Guid conversationId, string sdp)
+    {
+        await EnsureMembershipAsync(conversationId);
+        var userId = CurrentUserId;
+        var conversation = await conversationRepository.GetAsync(conversationId, Context.ConnectionAborted);
+        if (conversation is not null)
+        {
+            foreach (var memberId in conversation.MemberIds.Where(m => m != userId))
+            {
+                await Clients.Group(UserGroup(memberId))
+                    .CallAnswerReceived(conversationId, userId, sdp);
+            }
+        }
+    }
+
+    public async Task SendIceCandidate(Guid conversationId, string candidate, string? sdpMid, int? sdpMLineIndex)
+    {
+        await EnsureMembershipAsync(conversationId);
+        var userId = CurrentUserId;
+        var conversation = await conversationRepository.GetAsync(conversationId, Context.ConnectionAborted);
+        if (conversation is not null)
+        {
+            foreach (var memberId in conversation.MemberIds.Where(m => m != userId))
+            {
+                await Clients.Group(UserGroup(memberId))
+                    .IceCandidateReceived(conversationId, userId, candidate, sdpMid, sdpMLineIndex);
+            }
+        }
+    }
+
     private async Task EnsureMembershipAsync(Guid conversationId)
     {
         var conversation = await conversationRepository.GetAsync(

@@ -1,12 +1,19 @@
 import type {
   BlockedContactDto,
+  CallAnswerEvent,
+  CallEndedEvent,
+  CallOfferEvent,
+  CallStartedEvent,
   ContactRequestStateDto,
   ConversationDto,
   DesktopTransferProgress,
   DesktopUpdaterState,
   FriendDto,
   FriendRequestDto,
+  IceCandidateEvent,
   MessageDto,
+  ParticipantJoinedEvent,
+  ParticipantLeftEvent,
   PresenceChangedEvent,
   UserDto,
 } from "@retro/contracts";
@@ -29,6 +36,20 @@ export const desktopChannels = {
   startTyping: "desktop:typing:start",
   stopTyping: "desktop:typing:stop",
   sendBuzz: "desktop:buzz:send",
+  startCall: "desktop:call:start",
+  endCall: "desktop:call:end",
+  joinCall: "desktop:call:join",
+  leaveCall: "desktop:call:leave",
+  sendCallOffer: "desktop:call:offer",
+  sendCallAnswer: "desktop:call:answer",
+  sendIceCandidate: "desktop:call:ice",
+  callStarted: "desktop:call:started",
+  callEnded: "desktop:call:ended",
+  participantJoined: "desktop:call:participant-joined",
+  participantLeft: "desktop:call:participant-left",
+  callOfferReceived: "desktop:call:offer-received",
+  callAnswerReceived: "desktop:call:answer-received",
+  iceCandidateReceived: "desktop:call:ice-received",
   listFriends: "desktop:contacts:list",
   listContactRequests: "desktop:contacts:requests:list",
   sendFriendRequest: "desktop:contacts:requests:send",
@@ -37,6 +58,10 @@ export const desktopChannels = {
   blockContact: "desktop:contacts:block",
   unblockContact: "desktop:contacts:unblock",
   updateStatus: "desktop:presence:update",
+  updateProfile: "desktop:profile:update",
+  minimizeWindow: "desktop:window:minimize",
+  maximizeWindow: "desktop:window:maximize",
+  closeWindow: "desktop:window:close",
   clearLocalData: "desktop:data:clear",
   selectAndUploadAttachment: "desktop:attachments:upload",
   downloadAttachment: "desktop:attachments:download",
@@ -102,6 +127,11 @@ export interface DesktopStatusRequest {
   status: "online" | "away" | "busy" | "invisible";
 }
 
+export interface DesktopUpdateProfileRequest {
+  displayName?: string | undefined;
+  customStatus?: string | null | undefined;
+}
+
 export interface DesktopDownloadAttachmentRequest {
   attachmentId: string;
   fileName: string;
@@ -125,6 +155,24 @@ export interface DesktopOutboxEntry {
   updatedAt: string;
 }
 
+export interface DesktopStartCallRequest extends DesktopConversationRequest {
+  callType?: "audio" | "video";
+}
+
+export interface DesktopCallOfferRequest extends DesktopConversationRequest {
+  sdp: string;
+}
+
+export interface DesktopCallAnswerRequest extends DesktopConversationRequest {
+  sdp: string;
+}
+
+export interface DesktopIceCandidateRequest extends DesktopConversationRequest {
+  candidate: string;
+  sdpMid?: string | null;
+  sdpMLineIndex?: number | null;
+}
+
 export interface RetroDesktopBridge {
   getSession(): Promise<DesktopSessionState>;
   login(request: DesktopLoginRequest): Promise<DesktopSessionState>;
@@ -146,6 +194,24 @@ export interface RetroDesktopBridge {
   onPresenceChanged(
     listener: (event: PresenceChangedEvent) => void,
   ): () => void;
+  startCall(request: DesktopStartCallRequest): Promise<void>;
+  endCall(request: DesktopConversationRequest): Promise<void>;
+  joinCall(request: DesktopConversationRequest): Promise<void>;
+  leaveCall(request: DesktopConversationRequest): Promise<void>;
+  sendCallOffer(request: DesktopCallOfferRequest): Promise<void>;
+  sendCallAnswer(request: DesktopCallAnswerRequest): Promise<void>;
+  sendIceCandidate(request: DesktopIceCandidateRequest): Promise<void>;
+  onCallStarted(listener: (event: CallStartedEvent) => void): () => void;
+  onCallEnded(listener: (event: CallEndedEvent) => void): () => void;
+  onParticipantJoined(
+    listener: (event: ParticipantJoinedEvent) => void,
+  ): () => void;
+  onParticipantLeft(listener: (event: ParticipantLeftEvent) => void): () => void;
+  onCallOfferReceived(listener: (event: CallOfferEvent) => void): () => void;
+  onCallAnswerReceived(listener: (event: CallAnswerEvent) => void): () => void;
+  onIceCandidateReceived(
+    listener: (event: IceCandidateEvent) => void,
+  ): () => void;
   listFriends(): Promise<FriendDto[]>;
   listContactRequests(): Promise<ContactRequestStateDto>;
   sendFriendRequest(
@@ -156,6 +222,10 @@ export interface RetroDesktopBridge {
   blockContact(request: DesktopContactRequest): Promise<BlockedContactDto>;
   unblockContact(request: DesktopContactRequest): Promise<void>;
   updateStatus(request: DesktopStatusRequest): Promise<DesktopSessionState>;
+  updateProfile(request: DesktopUpdateProfileRequest): Promise<DesktopSessionState>;
+  minimizeWindow(): Promise<void>;
+  maximizeWindow(): Promise<void>;
+  closeWindow(): Promise<void>;
   clearLocalData(): Promise<void>;
   selectAndUploadAttachment(
     request: DesktopConversationRequest,

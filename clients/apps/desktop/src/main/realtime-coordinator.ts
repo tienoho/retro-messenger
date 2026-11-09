@@ -1,6 +1,13 @@
 import type {
+  CallAnswerEvent,
+  CallEndedEvent,
+  CallOfferEvent,
+  CallStartedEvent,
   ConversationDto,
+  IceCandidateEvent,
   MessageDto,
+  ParticipantJoinedEvent,
+  ParticipantLeftEvent,
   PresenceChangedEvent,
 } from "@retro/contracts";
 import { RetroRealtimeClient } from "@retro/realtime-client";
@@ -18,6 +25,13 @@ export interface DesktopRealtimeCallbacks {
   onPresence(event: PresenceChangedEvent): void;
   onUnreadChanged(count: number): void;
   isWindowFocused(): boolean;
+  onCallStarted?(event: CallStartedEvent): void;
+  onCallEnded?(event: CallEndedEvent): void;
+  onParticipantJoined?(event: ParticipantJoinedEvent): void;
+  onParticipantLeft?(event: ParticipantLeftEvent): void;
+  onCallOffer?(event: CallOfferEvent): void;
+  onCallAnswer?(event: CallAnswerEvent): void;
+  onIceCandidate?(event: IceCandidateEvent): void;
 }
 
 export class DesktopRealtimeCoordinator {
@@ -52,6 +66,17 @@ export class DesktopRealtimeCoordinator {
       this.callbacks.onBuzz({ conversationId, senderId, sentAt });
     });
     this.client.onPresence((event) => this.callbacks.onPresence(event));
+    this.client.onCallStarted((event) => this.callbacks.onCallStarted?.(event));
+    this.client.onCallEnded((event) => this.callbacks.onCallEnded?.(event));
+    this.client.onParticipantJoined((event) =>
+      this.callbacks.onParticipantJoined?.(event),
+    );
+    this.client.onParticipantLeft((event) =>
+      this.callbacks.onParticipantLeft?.(event),
+    );
+    this.client.onCallOffer((event) => this.callbacks.onCallOffer?.(event));
+    this.client.onCallAnswer((event) => this.callbacks.onCallAnswer?.(event));
+    this.client.onIceCandidate((event) => this.callbacks.onIceCandidate?.(event));
     this.client.onReconnected(() => {
       void this.syncAll();
     });
@@ -114,6 +139,47 @@ export class DesktopRealtimeCoordinator {
 
   public sendBuzz(conversationId: string): Promise<void> {
     return this.client.sendBuzz(conversationId);
+  }
+
+  public startCall(
+    conversationId: string,
+    callType: "audio" | "video" = "audio",
+  ): Promise<void> {
+    return this.client.startCall(conversationId, callType);
+  }
+
+  public endCall(conversationId: string): Promise<void> {
+    return this.client.endCall(conversationId);
+  }
+
+  public joinCall(conversationId: string): Promise<void> {
+    return this.client.joinCall(conversationId);
+  }
+
+  public leaveCall(conversationId: string): Promise<void> {
+    return this.client.leaveCall(conversationId);
+  }
+
+  public sendCallOffer(conversationId: string, sdp: string): Promise<void> {
+    return this.client.sendCallOffer(conversationId, sdp);
+  }
+
+  public sendCallAnswer(conversationId: string, sdp: string): Promise<void> {
+    return this.client.sendCallAnswer(conversationId, sdp);
+  }
+
+  public sendIceCandidate(
+    conversationId: string,
+    candidate: string,
+    sdpMid?: string | null,
+    sdpMLineIndex?: number | null,
+  ): Promise<void> {
+    return this.client.sendIceCandidate(
+      conversationId,
+      candidate,
+      sdpMid,
+      sdpMLineIndex ?? undefined,
+    );
   }
 
   public setActiveConversation(conversationId: string): void {

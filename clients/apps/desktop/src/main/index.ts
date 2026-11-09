@@ -84,9 +84,17 @@ function createWindow(): {
 
 async function start(): Promise<void> {
   electronSession.defaultSession.setPermissionRequestHandler(
-    (_webContents, _permission, callback) => callback(false),
+    (_webContents, permission, callback) => {
+      if (permission === "media") {
+        callback(true);
+        return;
+      }
+      callback(false);
+    },
   );
-  electronSession.defaultSession.setPermissionCheckHandler(() => false);
+  electronSession.defaultSession.setPermissionCheckHandler(
+    (_webContents, permission) => permission === "media",
+  );
 
   database = new DesktopDatabase(
     path.join(app.getPath("userData"), "retro-messenger.sqlite3"),
@@ -146,6 +154,34 @@ async function start(): Promise<void> {
       onPresence: (event) => {
         if (!window.isDestroyed())
           window.webContents.send(desktopChannels.presenceChanged, event);
+      },
+      onCallStarted: (event) => {
+        if (!window.isDestroyed())
+          window.webContents.send(desktopChannels.callStarted, event);
+      },
+      onCallEnded: (event) => {
+        if (!window.isDestroyed())
+          window.webContents.send(desktopChannels.callEnded, event);
+      },
+      onParticipantJoined: (event) => {
+        if (!window.isDestroyed())
+          window.webContents.send(desktopChannels.participantJoined, event);
+      },
+      onParticipantLeft: (event) => {
+        if (!window.isDestroyed())
+          window.webContents.send(desktopChannels.participantLeft, event);
+      },
+      onCallOffer: (event) => {
+        if (!window.isDestroyed())
+          window.webContents.send(desktopChannels.callOfferReceived, event);
+      },
+      onCallAnswer: (event) => {
+        if (!window.isDestroyed())
+          window.webContents.send(desktopChannels.callAnswerReceived, event);
+      },
+      onIceCandidate: (event) => {
+        if (!window.isDestroyed())
+          window.webContents.send(desktopChannels.iceCandidateReceived, event);
       },
       onUnreadChanged: (count) => nativeShell?.setUnreadCount(count),
       isWindowFocused: () => window.isFocused(),

@@ -8,6 +8,11 @@ import type {
   DesktopRespondFriendRequest,
   DesktopSendFriendRequest,
   DesktopStatusRequest,
+  DesktopUpdateProfileRequest,
+  DesktopStartCallRequest,
+  DesktopCallOfferRequest,
+  DesktopCallAnswerRequest,
+  DesktopIceCandidateRequest,
 } from "../../shared/ipc-contracts.ts";
 
 const uuidPattern =
@@ -172,4 +177,64 @@ export function normalizeApiBaseUrl(value: string): string {
   }
 
   return url.toString().replace(/\/$/, "");
+}
+
+export function validateStartCallRequest(
+  value: unknown,
+): DesktopStartCallRequest {
+  const input = record(value);
+  const conversationId = uuid(input.conversationId, "conversationId");
+  const callType =
+    input.callType === "video" ? "video" : "audio";
+  return { conversationId, callType };
+}
+
+export function validateCallOfferRequest(
+  value: unknown,
+): DesktopCallOfferRequest {
+  const input = record(value);
+  return {
+    conversationId: uuid(input.conversationId, "conversationId"),
+    sdp: boundedString(input.sdp, "sdp", 1, 100_000, false),
+  };
+}
+
+export function validateCallAnswerRequest(
+  value: unknown,
+): DesktopCallAnswerRequest {
+  const input = record(value);
+  return {
+    conversationId: uuid(input.conversationId, "conversationId"),
+    sdp: boundedString(input.sdp, "sdp", 1, 100_000, false),
+  };
+}
+
+export function validateIceCandidateRequest(
+  value: unknown,
+): DesktopIceCandidateRequest {
+  const input = record(value);
+  return {
+    conversationId: uuid(input.conversationId, "conversationId"),
+    candidate: boundedString(input.candidate, "candidate", 1, 10_000, false),
+    sdpMid: typeof input.sdpMid === "string" ? input.sdpMid : null,
+    sdpMLineIndex:
+      typeof input.sdpMLineIndex === "number" ? input.sdpMLineIndex : null,
+  };
+}
+
+export function validateUpdateProfileRequest(
+  value: unknown,
+): DesktopUpdateProfileRequest {
+  const input = record(value);
+  const displayName =
+    input.displayName !== undefined
+      ? boundedString(input.displayName, "displayName", 1, 64)
+      : undefined;
+  const customStatus =
+    input.customStatus !== undefined
+      ? (input.customStatus === null
+        ? null
+        : boundedString(input.customStatus, "customStatus", 0, 120))
+      : undefined;
+  return { displayName, customStatus };
 }

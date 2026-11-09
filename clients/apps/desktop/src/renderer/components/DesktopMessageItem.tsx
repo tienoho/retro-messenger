@@ -3,7 +3,7 @@ import {
   attachmentPattern,
   renderWithYahooEmoticons,
 } from "../utils/desktop-messages";
-import { IconBuzz, IconPaperclip } from "../icons/DesktopIcons";
+import { IconBuzz, IconPaperclip, IconAudibles } from "../icons/DesktopIcons";
 
 export interface DesktopMessageItemProps {
   message: MessageDto;
@@ -18,13 +18,14 @@ export function DesktopMessageItem({
 }: DesktopMessageItemProps) {
   const attachment = attachmentPattern.exec(message.content);
   const isBuzz = message.content === "BUZZ!!!" || message.content === "(BUZZ)";
+  const isAudible = message.content.startsWith("[Audible]");
 
   if (isBuzz) {
     return (
-      <article className="message mine buzzMessage">
+      <article className="message buzzMessage">
         <div className="buzzBanner">
           <IconBuzz size={14} style={{ marginRight: 6, verticalAlign: "middle" }} />
-          {mine ? "BẠN VỪA GỬI BUZZ!" : "BẠN NHẬN ĐƯỢC MỘT BUZZ!"}
+          <strong>{mine ? "BẠN VỪA GỬI BUZZ!" : "BẠN NHẬN ĐƯỢC MỘT BUZZ!"}</strong>
         </div>
         <small>#{message.sequence}</small>
       </article>
@@ -39,8 +40,14 @@ export function DesktopMessageItem({
     : "";
 
   return (
-    <article className={mine ? "message mine" : "message"}>
-      {attachment ? (
+    <article className={mine ? "message mine" : "message peer"}>
+      <span className="senderLabel">{mine ? "Bạn: " : "Bạn bè: "}</span>
+      {isAudible ? (
+        <span className="audibleBadge">
+          <IconAudibles size={13} style={{ marginRight: 4, verticalAlign: "middle" }} />
+          {message.content}
+        </span>
+      ) : attachment ? (
         <button
           type="button"
           className="attachmentButton"
@@ -52,9 +59,9 @@ export function DesktopMessageItem({
           {attachmentName}
         </button>
       ) : (
-        <p>{renderWithYahooEmoticons(message.content)}</p>
+        <span className="messageBodyText">{renderWithYahooEmoticons(message.content)}</span>
       )}
-      <small>#{message.sequence}</small>
+      <small className="messageSeq">#{message.sequence}</small>
     </article>
   );
 }

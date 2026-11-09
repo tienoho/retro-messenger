@@ -20,6 +20,7 @@
   "dependencies": {
     "@retro/api-client": "workspace:*",
     "@retro/contracts": "workspace:*",
+    "@retro/design-tokens": "workspace:*",
     "@retro/realtime-client": "workspace:*",
     "electron-updater": "6.8.9",
     "react": "19.0.0",

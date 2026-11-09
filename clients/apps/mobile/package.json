@@ -16,6 +16,7 @@
     "@expo/metro-runtime": "~57.0.8",
     "@retro/api-client": "workspace:*",
     "@retro/contracts": "workspace:*",
+    "@retro/realtime-client": "workspace:*",
     "@shopify/flash-list": "2.0.2",
     "expo": "~57.0.9",
     "expo-constants": "~57.0.8",

@@ -261,3 +261,23 @@ export interface ParticipantLeftEvent {
   userId: string;
   leftAt: string;
 }
+
+export interface CallOfferEvent {
+  conversationId: string;
+  senderId: string;
+  sdp: string;
+}
+
+export interface CallAnswerEvent {
+  conversationId: string;
+  senderId: string;
+  sdp: string;
+}
+
+export interface IceCandidateEvent {
+  conversationId: string;
+  senderId: string;
+  candidate: string;
+  sdpMid?: string | null;
+  sdpMLineIndex?: number | null;
+}

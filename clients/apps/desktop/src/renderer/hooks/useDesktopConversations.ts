@@ -19,6 +19,7 @@ export interface UseDesktopConversationsResult {
   isBuzzing: boolean;
   openConversation: (conversation: ConversationDto) => Promise<void>;
   send: (event: FormEvent<HTMLFormElement>) => Promise<void>;
+  sendCustomMessage: (content: string) => Promise<void>;
   changeDraft: (value: string) => void;
   sendBuzz: () => Promise<void>;
   attach: () => Promise<void>;
@@ -29,8 +30,15 @@ export interface UseDesktopConversationsResult {
   resetConversations: () => void;
 }
 
+export interface DesktopAudioHandlers {
+  playMessageSound?: (() => void) | undefined;
+  playSentSound?: (() => void) | undefined;
+  playBuzzSound?: (() => void) | undefined;
+}
+
 export function useDesktopConversations(
-  onError?: (message: string) => void,
+  onError?: ((message: string) => void) | undefined,
+  audio?: DesktopAudioHandlers | undefined,
 ): UseDesktopConversationsResult {
   const [conversations, setConversations] = useState<ConversationDto[]>([]);
   const [active, setActive] = useState<ConversationDto | null>(null);
@@ -105,8 +113,18 @@ export function useDesktopConversations(
     };
 
     const unsubscribers = [
-      window.retroDesktop.onMessageSent(receive),
-      window.retroDesktop.onRealtimeMessage(receive),
+      window.retroDesktop.onMessageSent((msg) => {
+        audio?.playSentSound?.();
+        receive(msg);
+      }),
+      window.retroDesktop.onRealtimeMessage((msg) => {
+        if (msg.content === "BUZZ!!!" || msg.content === "(BUZZ)") {
+          audio?.playBuzzSound?.();
+        } else {
+          audio?.playMessageSound?.();
+        }
+        receive(msg);
+      }),
       window.retroDesktop.onTypingChanged((event) => {
         if (event.conversationId !== activeRef.current?.id) return;
         window.clearTimeout(typingExpiry.current.get(event.userId));
@@ -133,6 +151,7 @@ export function useDesktopConversations(
         }
       }),
       window.retroDesktop.onBuzzReceived(() => {
+        audio?.playBuzzSound?.();
         setLastBuzzAt(Date.now());
         setIsBuzzing(true);
         window.setTimeout(() => setIsBuzzing(false), 500);
@@ -213,12 +232,32 @@ export function useDesktopConversations(
     if (!active || Date.now() - lastBuzzAt < 10_000) return;
     setLastBuzzAt(Date.now());
     setIsBuzzing(true);
+    audio?.playBuzzSound?.();
     window.setTimeout(() => setIsBuzzing(false), 500);
     try {
       await window.retroDesktop.sendBuzz({ conversationId: active.id });
     } catch (caught) {
       onError?.(
         caught instanceof Error ? caught.message : "Không thể gửi Buzz.",
+      );
+    }
+  }
+
+  async function sendCustomMessage(content: string): Promise<void> {
+    const text = content.trim();
+    if (!active || !text) return;
+    try {
+      await window.retroDesktop.enqueueMessage({
+        conversationId: active.id,
+        clientMessageId: crypto.randomUUID(),
+        content: text,
+      });
+      await refreshOutbox();
+    } catch (caught) {
+      onError?.(
+        caught instanceof Error
+          ? caught.message
+          : "Không thể xếp hàng tin nhắn.",
       );
     }
   }
@@ -286,6 +325,7 @@ export function useDesktopConversations(
     isBuzzing,
     openConversation,
     send,
+    sendCustomMessage,
     changeDraft,
     sendBuzz,
     attach,

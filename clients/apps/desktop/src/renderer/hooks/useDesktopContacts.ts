@@ -24,8 +24,14 @@ export interface UseDesktopContactsResult {
   resetContacts: () => void;
 }
 
+export interface DesktopContactAudioHandlers {
+  playDoorOpen?: (() => void) | undefined;
+  playDoorSlam?: (() => void) | undefined;
+}
+
 export function useDesktopContacts(
-  onError?: (message: string) => void,
+  onError?: ((message: string) => void) | undefined,
+  audioHandlers?: DesktopContactAudioHandlers | undefined,
 ): UseDesktopContactsResult {
   const [friends, setFriends] = useState<FriendDto[]>([]);
   const [requests, setRequests] =
@@ -47,17 +53,26 @@ export function useDesktopContacts(
   useEffect(() => {
     const unsubPresence = window.retroDesktop.onPresenceChanged((event) => {
       setFriends((current) =>
-        current.map((friend) =>
-          friend.userId === event.userId
-            ? { ...friend, status: event.status }
-            : friend,
-        ),
+        current.map((friend) => {
+          if (friend.userId === event.userId) {
+            if (event.status === "online" && friend.status !== "online") {
+              audioHandlers?.playDoorOpen?.();
+            } else if (
+              event.status !== "online" &&
+              friend.status === "online"
+            ) {
+              audioHandlers?.playDoorSlam?.();
+            }
+            return { ...friend, status: event.status };
+          }
+          return friend;
+        }),
       );
     });
     return () => {
       unsubPresence();
     };
-  }, []);
+  }, [audioHandlers]);
 
   async function addFriend(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault();

@@ -12,6 +12,7 @@ import {
   createRetroSimulatedVideoStream,
   createAudioLevelMeter,
 } from "./mediaStreamHelper";
+import { WebRtcCallEngine } from "./webrtcCallEngine";
 
 export type CallState = "idle" | "calling" | "incoming" | "connected" | "ended";
 export type CallType = "audio" | "video";
@@ -81,6 +82,7 @@ export function useLiveKitCall(
   const durationTimerRef = useRef<number | null>(null);
   const callTimeoutTimerRef = useRef<number | null>(null);
   const localStreamRef = useRef<MediaStream | null>(null);
+  const rtcEngineRef = useRef<WebRtcCallEngine | null>(null);
 
   const {
     startOutgoingRingtone,
@@ -91,6 +93,10 @@ export function useLiveKitCall(
   } = useRetroAudio();
 
   const stopAllMedia = useCallback(() => {
+    if (rtcEngineRef.current) {
+      rtcEngineRef.current.destroy();
+      rtcEngineRef.current = null;
+    }
     if (durationTimerRef.current !== null) {
       window.clearInterval(durationTimerRef.current);
       durationTimerRef.current = null;
@@ -120,10 +126,15 @@ export function useLiveKitCall(
   }, []);
 
   const setupMediaStreams = useCallback(
-    async (type: CallType, partnerName: string) => {
+    async (
+      type: CallType,
+      partnerName: string,
+      targetConvId?: string | null,
+      isInitiator = false,
+    ) => {
       stopAllMedia();
 
-      // 1. Acquire Local Media
+      // 1. Acquire Local Media (Hardware or Retro Fallback)
       const local = await acquireUserMedia({
         audio: true,
         video: type === "video",
@@ -136,18 +147,36 @@ export function useLiveKitCall(
       setLocalStream(local.stream);
       setIsSimulatedLocal(local.isSimulated);
 
-      // 2. Setup Remote Stream (simulated or peer feed)
+      // 2. Setup WebRTC Peer-to-Peer Connection
+      const activeConvId = targetConvId || conversationId;
+      if (activeConvId) {
+        const rtcEngine = new WebRtcCallEngine({
+          conversationId: activeConvId,
+          isInitiator,
+          callType: type,
+          localStream: local.stream,
+          realtime,
+          onRemoteStream: (stream) => {
+            setRemoteStream(stream);
+            setIsSimulatedRemote(false);
+          },
+        });
+        rtcEngineRef.current = rtcEngine;
+        void rtcEngine.start();
+      }
+
+      // 3. Fallback preview placeholder for video before remote peer connects
       if (type === "video") {
         const remoteVideo = createRetroSimulatedVideoStream(
           `Webcam: ${partnerName}`,
-          "Yahoo! Video Chat Live Feed",
+          "Đang kết nối luồng P2P WebRTC…",
         );
         remoteCleanupRef.current = remoteVideo.stop;
-        setRemoteStream(remoteVideo.stream);
+        setRemoteStream((current) => current ?? remoteVideo.stream);
         setIsSimulatedRemote(true);
       }
 
-      // 3. Setup Audio Level Meter
+      // 4. Setup Audio Level Meter
       const cleanMeter = createAudioLevelMeter(local.stream, (lvl) => {
         setLocalAudioLevel(lvl);
         // Simulate partner audio responsiveness
@@ -155,13 +184,13 @@ export function useLiveKitCall(
       });
       audioMeterCleanupsRef.current.push(cleanMeter);
 
-      // 4. Start Duration Timer
+      // 5. Start Duration Timer
       setDurationSeconds(0);
       durationTimerRef.current = window.setInterval(() => {
         setDurationSeconds((sec) => sec + 1);
       }, 1000);
     },
-    [stopAllMedia],
+    [stopAllMedia, conversationId, realtime],
   );
 
   // Realtime SignalR Listeners
@@ -203,12 +232,18 @@ export function useLiveKitCall(
       }, 1800);
     });
 
-    const unsubJoined = realtime.onParticipantJoined((_evt: ParticipantJoinedEvent) => {
+    const unsubJoined = realtime.onParticipantJoined((evt: ParticipantJoinedEvent) => {
       if (callState === "calling" || callState === "incoming") {
         stopRingtones();
         playCallConnected();
         setCallState("connected");
-        void setupMediaStreams(callType, callerName);
+        const isInitiator = callerId === currentUserId;
+        void setupMediaStreams(
+          callType,
+          callerName,
+          conversationId ?? evt.conversationId,
+          isInitiator,
+        );
       }
     });
 
@@ -287,7 +322,7 @@ export function useLiveKitCall(
     }
 
     setCallState("connected");
-    void setupMediaStreams(callType, callerName);
+    void setupMediaStreams(callType, callerName, conversationId, false);
   }, [api, realtime, conversationId, roomName, callType, callerName, stopRingtones, playCallConnected, setupMediaStreams]);
 
   const declineCall = useCallback(async () => {

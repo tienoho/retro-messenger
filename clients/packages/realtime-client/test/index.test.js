@@ -21,6 +21,12 @@ describe("RetroRealtimeClient", () => {
     assert.strictEqual(typeof client.onCallEnded, "function");
     assert.strictEqual(typeof client.onParticipantJoined, "function");
     assert.strictEqual(typeof client.onParticipantLeft, "function");
+    assert.strictEqual(typeof client.sendCallOffer, "function");
+    assert.strictEqual(typeof client.sendCallAnswer, "function");
+    assert.strictEqual(typeof client.sendIceCandidate, "function");
+    assert.strictEqual(typeof client.onCallOffer, "function");
+    assert.strictEqual(typeof client.onCallAnswer, "function");
+    assert.strictEqual(typeof client.onIceCandidate, "function");
     assert.strictEqual(typeof client.onReconnected, "function");
   });
 
@@ -137,5 +143,43 @@ describe("RetroRealtimeClient", () => {
     assert.strictEqual(received.userId, "user-leaving");
     assert.strictEqual(received.roomName, "conv_conv-204");
     assert.ok(received.leftAt);
+  });
+
+  it("should correctly unpack CallOffer, CallAnswer, and IceCandidate events", () => {
+    const client = new RetroRealtimeClient("http://localhost:5000/realtime");
+    let receivedOffer = null;
+    let receivedAnswer = null;
+    let receivedIce = null;
+
+    client.onCallOffer((evt) => {
+      receivedOffer = evt;
+    });
+    client.onCallAnswer((evt) => {
+      receivedAnswer = evt;
+    });
+    client.onIceCandidate((evt) => {
+      receivedIce = evt;
+    });
+
+    triggerSignalREvent(client, "CallOfferReceived", "conv-301", "peer-1", "mock-sdp-offer");
+    triggerSignalREvent(client, "CallAnswerReceived", "conv-301", "peer-2", "mock-sdp-answer");
+    triggerSignalREvent(client, "IceCandidateReceived", "conv-301", "peer-1", "candidate:1", "audio", 0);
+
+    assert.ok(receivedOffer);
+    assert.strictEqual(receivedOffer.conversationId, "conv-301");
+    assert.strictEqual(receivedOffer.senderId, "peer-1");
+    assert.strictEqual(receivedOffer.sdp, "mock-sdp-offer");
+
+    assert.ok(receivedAnswer);
+    assert.strictEqual(receivedAnswer.conversationId, "conv-301");
+    assert.strictEqual(receivedAnswer.senderId, "peer-2");
+    assert.strictEqual(receivedAnswer.sdp, "mock-sdp-answer");
+
+    assert.ok(receivedIce);
+    assert.strictEqual(receivedIce.conversationId, "conv-301");
+    assert.strictEqual(receivedIce.senderId, "peer-1");
+    assert.strictEqual(receivedIce.candidate, "candidate:1");
+    assert.strictEqual(receivedIce.sdpMid, "audio");
+    assert.strictEqual(receivedIce.sdpMLineIndex, 0);
   });
 });

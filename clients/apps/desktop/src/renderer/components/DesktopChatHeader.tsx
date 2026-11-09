@@ -1,5 +1,11 @@
 import type { ConversationDto } from "@retro/contracts";
-import { IconBuzz, IconPaperclip, IconPencil } from "../icons/DesktopIcons";
+import {
+  IconBuzz,
+  IconPaperclip,
+  IconPencil,
+  IconPhone,
+  IconVideo,
+} from "../icons/DesktopIcons";
 
 export interface DesktopChatHeaderProps {
   active: ConversationDto | null;
@@ -8,6 +14,8 @@ export interface DesktopChatHeaderProps {
   lastBuzzAt: number;
   onAttach: () => void;
   onSendBuzz: () => void;
+  onStartVoiceCall?: (() => void) | undefined;
+  onStartVideoCall?: (() => void) | undefined;
 }
 
 export function DesktopChatHeader({
@@ -17,6 +25,8 @@ export function DesktopChatHeader({
   lastBuzzAt,
   onAttach,
   onSendBuzz,
+  onStartVoiceCall,
+  onStartVideoCall,
 }: DesktopChatHeaderProps) {
   const elapsed = Math.floor((Date.now() - lastBuzzAt) / 1000);
   const remaining = Math.max(0, 10 - elapsed);
@@ -24,22 +34,47 @@ export function DesktopChatHeader({
 
   return (
     <header className="chatHeader">
-      <div>
-        <strong>{active?.title ?? "Chưa có cuộc trò chuyện"}</strong>
-        <span>
-          {typingUsersCount > 0 ? (
-            <span>
-              <IconPencil size={11} style={{ marginRight: 4, verticalAlign: "middle" }} />
-              Đang nhập tin nhắn…
-            </span>
-          ) : pendingCount > 0 ? (
-            `${pendingCount} tin đang chờ gửi`
-          ) : (
-            "Đã đồng bộ"
-          )}
-        </span>
+      <div className="chatHeaderLeft">
+        <div className="chatHeaderAvatar">
+          {active?.title?.slice(0, 1).toUpperCase() ?? "Y"}
+        </div>
+        <div className="chatHeaderMeta">
+          <strong title={active?.title ?? "Chưa có cuộc trò chuyện"}>
+            {active?.title ?? "Chưa có cuộc trò chuyện"}
+          </strong>
+          <span>
+            {typingUsersCount > 0 ? (
+              <span>
+                <IconPencil size={11} style={{ marginRight: 4, verticalAlign: "middle" }} />
+                Đang nhập tin nhắn…
+              </span>
+            ) : pendingCount > 0 ? (
+              `${pendingCount} tin đang chờ gửi`
+            ) : (
+              "Trực tuyến — Sẵn sàng trò chuyện"
+            )}
+          </span>
+        </div>
       </div>
       <div className="headerActions">
+        <button
+          type="button"
+          onClick={onStartVoiceCall}
+          disabled={!active || !onStartVoiceCall}
+          title="Gọi thoại Voice Chat"
+        >
+          <IconPhone size={12} style={{ marginRight: 4, verticalAlign: "middle" }} />
+          Thoại
+        </button>
+        <button
+          type="button"
+          onClick={onStartVideoCall}
+          disabled={!active || !onStartVideoCall}
+          title="Gọi video Webcam"
+        >
+          <IconVideo size={12} style={{ marginRight: 4, verticalAlign: "middle" }} />
+          Video
+        </button>
         <button
           type="button"
           onClick={onAttach}

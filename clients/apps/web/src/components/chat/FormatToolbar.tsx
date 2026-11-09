@@ -6,7 +6,7 @@ import {
   type YahooAudibleDefinition,
 } from "@retro/design-tokens";
 import { SmileyHappy } from "../../icons/YahooSmileys";
-import { IconAudibles, IconPalette, IconBuzz } from "../../icons/UiIcons";
+import { IconAudibles, IconPalette, IconBuzz, IconGame } from "../../icons/UiIcons";
 import { AttachmentPicker } from "../../features/attachments";
 import { EmoticonPicker } from "./EmoticonPicker";
 import { AudiblePicker } from "./AudiblePicker";
@@ -32,6 +32,7 @@ export interface FormatToolbarProps {
   onSendBuzz: () => void;
   buzzCooldownSeconds?: number | undefined;
   onFileSelect: (file: File) => void;
+  onOpenGame?: (() => void) | undefined;
   disabled: boolean;
   isUploading: boolean;
 }
@@ -46,6 +47,7 @@ export function FormatToolbar({
   onSendBuzz,
   buzzCooldownSeconds = 0,
   onFileSelect,
+  onOpenGame,
   disabled,
   isUploading,
 }: FormatToolbarProps) {
@@ -200,6 +202,20 @@ export function FormatToolbar({
         <IconPalette size={14} style={{ marginRight: 4, verticalAlign: "middle" }} />
         IMVironment ▼
       </button>
+
+      {/* Yahoo! Games toggle */}
+      {onOpenGame && (
+        <button
+          type="button"
+          className="imvToggleBtn"
+          title="Yahoo! Games - Chơi cờ Caro cùng bạn bè"
+          disabled={disabled}
+          onClick={onOpenGame}
+        >
+          <IconGame size={14} style={{ marginRight: 4, verticalAlign: "middle" }} />
+          Trò chơi
+        </button>
+      )}
 
       {/* Attachment */}
       <AttachmentPicker

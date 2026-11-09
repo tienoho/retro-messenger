@@ -223,6 +223,32 @@ export class DesktopSessionManager {
     return result;
   }
 
+  public async updateProfile(
+    displayName: string,
+    customStatus?: string | null,
+  ): Promise<UserDto> {
+    const updated = await this.request<UserDto>("/api/v1/users/me/profile", {
+      method: "PUT",
+      body: JSON.stringify({ displayName, customStatus }),
+    });
+    if (this.user && this.refreshToken) {
+      const nextUser: UserDto = {
+        ...this.user,
+        displayName: updated.displayName,
+        customStatus: updated.customStatus ?? null,
+      };
+      this.user = nextUser;
+      this.database.saveSession({
+        encryptedRefreshToken: this.encryption.encrypt(this.refreshToken),
+        userId: nextUser.id,
+        username: nextUser.username,
+        displayName: nextUser.displayName,
+        status: nextUser.status,
+      });
+    }
+    return updated;
+  }
+
   public getUploadUrl(
     conversationId: string,
     fileName: string,

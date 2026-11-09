@@ -10,6 +10,7 @@ import {
   StatusDotBusy,
   StatusDotAvailable,
   YahooLogoIcon,
+  IconBuzz,
 } from "../../icons/UiIcons";
 
 export interface CallOverlayProps {
@@ -273,7 +274,7 @@ export function CallOverlay({
                 </div>
 
                 <div className="voiceDivider">
-                  <span className="voiceWaveSymbol">⚡</span>
+                  <IconBuzz size={18} />
                 </div>
 
                 <div className="voiceCard voiceCardRemote">

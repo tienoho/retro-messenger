@@ -25,6 +25,7 @@ export interface MessageComposerProps {
   attachments: AttachmentMetadata[];
   onRemoveAttachment: (id: string) => void;
   mediaError: string | null;
+  onOpenGame?: (() => void) | undefined;
 }
 
 export function MessageComposer({
@@ -45,6 +46,7 @@ export function MessageComposer({
   attachments,
   onRemoveAttachment,
   mediaError,
+  onOpenGame,
 }: MessageComposerProps) {
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -88,6 +90,7 @@ export function MessageComposer({
         onSendBuzz={onSendBuzz}
         buzzCooldownSeconds={buzzCooldownSeconds}
         onFileSelect={onFileSelect}
+        onOpenGame={onOpenGame}
         disabled={disabled}
         isUploading={isUploading}
       />
