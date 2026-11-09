@@ -43,6 +43,7 @@ export class RetroApiClient {
   private readonly baseUrl: string;
   private accessToken: string | null = null;
   private refreshToken: string | null = null;
+  private readonly sessionExpiredListeners = new Set<() => void>();
 
   public constructor(baseUrl: string) {
     this.baseUrl = baseUrl;
@@ -55,6 +56,7 @@ export class RetroApiClient {
   ): Promise<T> {
     const response = await fetch(`${this.baseUrl}${path}`, {
       ...init,
+      credentials: "include",
       headers: {
         "content-type": "application/json",
         ...(this.accessToken
@@ -64,9 +66,24 @@ export class RetroApiClient {
       },
     });
 
-    if (response.status === 401 && retryOnUnauthorized && this.refreshToken) {
-      await this.refreshSession();
-      return this.request<T>(path, init, false);
+    if (response.status === 401 && retryOnUnauthorized) {
+      if (this.refreshToken) {
+        try {
+          await this.refreshSession();
+          return await this.request<T>(path, init, false);
+        } catch {
+          // Refresh failed, continue to throw
+        }
+      } else {
+        try {
+          const restored = await this.restoreWebSession();
+          if (restored) {
+            return await this.request<T>(path, init, false);
+          }
+        } catch {
+          // Restore failed, continue to throw
+        }
+      }
     }
 
     if (!response.ok) {
@@ -130,8 +147,46 @@ export class RetroApiClient {
       this.setSession(response);
       return response;
     } catch (error) {
-      if (isRefreshTokenRejected(error)) this.clearSession();
+      if (isRefreshTokenRejected(error)) {
+        this.clearSession();
+        this.notifySessionExpired();
+      }
       throw error;
+    }
+  }
+
+  public onSessionExpired(listener: () => void): () => void {
+    this.sessionExpiredListeners.add(listener);
+    return () => {
+      this.sessionExpiredListeners.delete(listener);
+    };
+  }
+
+  private notifySessionExpired(): void {
+    for (const listener of this.sessionExpiredListeners) {
+      try {
+        listener();
+      } catch {
+        // ignore subscriber errors
+      }
+    }
+  }
+
+  public async restoreWebSession(): Promise<AuthResponse | null> {
+    try {
+      const response = await this.request<AuthResponse>(
+        "/api/v1/auth/refresh",
+        {
+          method: "POST",
+          body: JSON.stringify({ refreshToken: this.refreshToken }),
+        },
+        false,
+      );
+      this.setSession(response);
+      return response;
+    } catch {
+      this.clearSession();
+      return null;
     }
   }
 
@@ -143,8 +198,63 @@ export class RetroApiClient {
     return this.refreshSession();
   }
 
+  public async changePassword(
+    currentPassword: string,
+    newPassword: string,
+  ): Promise<void> {
+    await this.request<{ message: string }>("/api/v1/auth/password", {
+      method: "PUT",
+      body: JSON.stringify({ currentPassword, newPassword }),
+    });
+  }
+
   public getAccessToken(): string {
     return this.accessToken ?? "";
+  }
+
+  public async getValidAccessToken(): Promise<string> {
+    if (!this.accessToken) {
+      if (this.refreshToken) {
+        try {
+          const res = await this.refreshSession();
+          return res.accessToken;
+        } catch {
+          return "";
+        }
+      } else {
+        try {
+          const res = await this.restoreWebSession();
+          return res?.accessToken ?? "";
+        } catch {
+          return "";
+        }
+      }
+    }
+
+    try {
+      const parts = this.accessToken.split(".");
+      if (parts.length === 3) {
+        const base64 = parts[1]!.replace(/-/g, "+").replace(/_/g, "/");
+        const payloadStr =
+          typeof atob === "function"
+            ? atob(base64)
+            : (globalThis as unknown as { Buffer?: { from(data: string, enc: string): { toString(enc: string): string } } })
+                .Buffer?.from(base64, "base64").toString("utf-8") ?? "{}";
+        const payload = JSON.parse(payloadStr);
+        if (payload.exp && Date.now() >= (payload.exp - 30) * 1000) {
+          if (this.refreshToken) {
+            const res = await this.refreshSession();
+            return res.accessToken;
+          } else {
+            const res = await this.restoreWebSession();
+            return res?.accessToken ?? "";
+          }
+        }
+      }
+    } catch {
+      // Ignored
+    }
+    return this.accessToken;
   }
 
   public clearSession(): void {
@@ -155,16 +265,14 @@ export class RetroApiClient {
   public async logout(): Promise<void> {
     const refreshToken = this.refreshToken;
     try {
-      if (refreshToken) {
-        await this.request<{ message: string }>(
-          "/api/v1/auth/logout",
-          {
-            method: "POST",
-            body: JSON.stringify({ refreshToken }),
-          },
-          false,
-        );
-      }
+      await this.request<{ message: string }>(
+        "/api/v1/auth/logout",
+        {
+          method: "POST",
+          body: JSON.stringify({ refreshToken }),
+        },
+        false,
+      );
     } finally {
       this.clearSession();
     }

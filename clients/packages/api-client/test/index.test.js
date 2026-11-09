@@ -141,16 +141,21 @@ describe("RetroApiClient", () => {
     }
   });
 
-  it("clears a rejected persisted refresh token", async () => {
+  it("clears a rejected persisted refresh token and fires onSessionExpired", async () => {
     const originalFetch = globalThis.fetch;
     globalThis.fetch = async () => jsonResponse({ error: "invalid" }, 401);
 
     try {
+      let expiredFired = false;
       const client = new RetroApiClient("http://localhost:5000");
+      client.onSessionExpired(() => {
+        expiredFired = true;
+      });
       await assert.rejects(client.restoreSession("rejected-refresh"), {
         name: "RetroApiError",
         status: 401,
       });
+      assert.strictEqual(expiredFired, true);
       await assert.rejects(client.refreshSession(), /No refresh token/);
     } finally {
       globalThis.fetch = originalFetch;
@@ -182,6 +187,60 @@ describe("RetroApiClient", () => {
         },
       ]);
       assert.strictEqual(client.getAccessToken(), "");
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
+  it("restores web session via cookie without stored refresh token", async () => {
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = async (url, init = {}) => {
+      const path = new URL(String(url)).pathname;
+      if (path === "/api/v1/auth/refresh") {
+        return jsonResponse({
+          accessToken: "cookie-access-token",
+          refreshToken: "cookie-refresh-token",
+          user: authResponse.user,
+        });
+      }
+      return jsonResponse({ error: "not found" }, 404);
+    };
+
+    try {
+      const client = new RetroApiClient("http://localhost:5000");
+      const session = await client.restoreWebSession();
+      assert.ok(session);
+      assert.strictEqual(session.accessToken, "cookie-access-token");
+      assert.strictEqual(client.getAccessToken(), "cookie-access-token");
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
+  it("changes password for authenticated user", async () => {
+    const originalFetch = globalThis.fetch;
+    const requests = [];
+    globalThis.fetch = async (url, init = {}) => {
+      const path = new URL(String(url)).pathname;
+      requests.push({
+        path,
+        method: init.method,
+        body: JSON.parse(init.body),
+        auth: init.headers?.authorization,
+      });
+      return jsonResponse({ message: "Password updated successfully." });
+    };
+
+    try {
+      const client = new RetroApiClient("http://localhost:5000");
+      // Simulate existing session
+      client.setSession?.(authResponse) ?? (client.accessToken = "existing-token");
+      await client.changePassword("oldPass123", "newPass456");
+      assert.strictEqual(requests.length, 1);
+      assert.strictEqual(requests[0].path, "/api/v1/auth/password");
+      assert.strictEqual(requests[0].method, "PUT");
+      assert.strictEqual(requests[0].body.currentPassword, "oldPass123");
+      assert.strictEqual(requests[0].body.newPassword, "newPass456");
     } finally {
       globalThis.fetch = originalFetch;
     }

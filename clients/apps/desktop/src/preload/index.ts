@@ -17,6 +17,8 @@ import {
   type DesktopConversationRequest,
   type DesktopEnqueueMessageRequest,
   type DesktopLoginRequest,
+  type DesktopRegisterRequest,
+  type DesktopChangePasswordRequest,
   type DesktopNotificationRequest,
   type DesktopBuzzEvent,
   type DesktopContactRequest,
@@ -47,6 +49,10 @@ const bridge: RetroDesktopBridge = {
   getSession: () => ipcRenderer.invoke(desktopChannels.getSession),
   login: (request: DesktopLoginRequest) =>
     ipcRenderer.invoke(desktopChannels.login, request),
+  register: (request: DesktopRegisterRequest) =>
+    ipcRenderer.invoke(desktopChannels.register, request),
+  changePassword: (request: DesktopChangePasswordRequest) =>
+    ipcRenderer.invoke(desktopChannels.changePassword, request),
   logout: () => ipcRenderer.invoke(desktopChannels.logout),
   listConversations: () =>
     ipcRenderer.invoke(desktopChannels.listConversations),

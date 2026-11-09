@@ -2,9 +2,11 @@ import { useState, type FormEvent } from "react";
 import { SmileyHappy } from "../../icons/YahooSmileys";
 import { IconIdea, IconUser } from "../../icons/UiIcons";
 
+const SAVED_USERNAME_KEY = "retro_saved_username";
+
 export interface AuthDialogProps {
-  onLogin: (username: string, password: string) => Promise<void>;
-  onRegister: (username: string, displayName: string, password: string) => Promise<void>;
+  onLogin: (username: string, password: string, invisible?: boolean) => Promise<void>;
+  onRegister: (username: string, displayName: string, password: string, invisible?: boolean) => Promise<void>;
   authenticating: boolean;
   authError: string | null;
   onClearError: () => void;
@@ -18,23 +20,63 @@ export function AuthDialog({
   onClearError,
 }: AuthDialogProps) {
   const [authMode, setAuthMode] = useState<"login" | "register">("login");
-  const [username, setUsername] = useState("");
+  const [username, setUsername] = useState(() => {
+    try {
+      return localStorage.getItem(SAVED_USERNAME_KEY) ?? "";
+    } catch {
+      return "";
+    }
+  });
   const [displayName, setDisplayName] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [rememberId, setRememberId] = useState(() => {
+    try {
+      return Boolean(localStorage.getItem(SAVED_USERNAME_KEY));
+    } catch {
+      return false;
+    }
+  });
+  const [invisibleLogin, setInvisibleLogin] = useState(false);
+  const [localError, setLocalError] = useState<string | null>(null);
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setLocalError(null);
+
+    // Save or clear remembered username
+    try {
+      if (rememberId && username.trim()) {
+        localStorage.setItem(SAVED_USERNAME_KEY, username.trim());
+      } else {
+        localStorage.removeItem(SAVED_USERNAME_KEY);
+      }
+    } catch {
+      // storage unavailable
+    }
+
     if (authMode === "login") {
-      void onLogin(username.trim(), password);
+      void onLogin(username.trim(), password, invisibleLogin);
     } else {
-      void onRegister(username.trim(), displayName.trim(), password);
+      if (password.length < 6) {
+        setLocalError("Mật khẩu phải chứa ít nhất 6 ký tự.");
+        return;
+      }
+      if (password !== confirmPassword) {
+        setLocalError("Mật khẩu xác nhận không trùng khớp.");
+        return;
+      }
+      void onRegister(username.trim(), displayName.trim() || username.trim(), password, invisibleLogin);
     }
   };
 
   const handleToggleMode = () => {
     setAuthMode(current => (current === "login" ? "register" : "login"));
+    setLocalError(null);
     onClearError();
   };
+
+  const activeError = localError || authError;
 
   return (
     <main className="authShell">
@@ -42,7 +84,7 @@ export function AuthDialog({
         <header className="authWindowBar">
           <div className="brandTag">
             <span className="yIcon">R!</span>
-            <span>Retro! Messenger — Đăng nhập</span>
+            <span>Retro! Messenger — {authMode === "login" ? "Đăng nhập" : "Đăng ký tài khoản"}</span>
           </div>
           <div className="retroWindowControls">
             <button className="winControlBtn" type="button" aria-label="Minimize">_</button>
@@ -83,7 +125,7 @@ export function AuthDialog({
                   autoComplete="name"
                   value={displayName}
                   onChange={event => setDisplayName(event.target.value)}
-                  placeholder="Ví dụ: Hồng Anh"
+                  placeholder="Ví dụ: Hồng Anh (Yahoo!)"
                   required
                 />
               </div>
@@ -97,11 +139,27 @@ export function AuthDialog({
                 autoComplete={authMode === "login" ? "current-password" : "new-password"}
                 value={password}
                 onChange={event => setPassword(event.target.value)}
-                placeholder="Nhập mật khẩu..."
+                placeholder="Nhập mật khẩu (ít nhất 6 ký tự)..."
                 required
                 minLength={6}
               />
             </div>
+
+            {authMode === "register" && (
+              <div className="authField">
+                <label htmlFor="auth-confirm-password">Xác nhận mật khẩu:</label>
+                <input
+                  id="auth-confirm-password"
+                  type="password"
+                  autoComplete="new-password"
+                  value={confirmPassword}
+                  onChange={event => setConfirmPassword(event.target.value)}
+                  placeholder="Nhập lại mật khẩu..."
+                  required
+                  minLength={6}
+                />
+              </div>
+            )}
 
             {authMode === "login" && (
               <div className="authQuickRow">
@@ -116,6 +174,7 @@ export function AuthDialog({
                     onClick={() => {
                       setUsername("honganh");
                       setPassword("RetroPass123!");
+                      setLocalError(null);
                       onClearError();
                     }}
                   >
@@ -128,6 +187,7 @@ export function AuthDialog({
                     onClick={() => {
                       setUsername("hoangnam");
                       setPassword("RetroPass123!");
+                      setLocalError(null);
                       onClearError();
                     }}
                   >
@@ -139,7 +199,8 @@ export function AuthDialog({
                     className="authQuickBtn"
                     onClick={() => {
                       setUsername("retro_tester");
-                      setPassword("Password123!");
+                      setPassword("RetroPass123!");
+                      setLocalError(null);
                       onClearError();
                     }}
                   >
@@ -150,12 +211,29 @@ export function AuthDialog({
               </div>
             )}
 
-            <div className="authRememberRow">
-              <input type="checkbox" id="remember-me" defaultChecked />
-              <label htmlFor="remember-me">Ghi nhớ Yahoo! ID và mật khẩu</label>
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px", margin: "6px 0" }}>
+              <div className="authRememberRow">
+                <input
+                  type="checkbox"
+                  id="remember-me"
+                  checked={rememberId}
+                  onChange={e => setRememberId(e.target.checked)}
+                />
+                <label htmlFor="remember-me">Ghi nhớ Yahoo! ID</label>
+              </div>
+
+              <div className="authRememberRow">
+                <input
+                  type="checkbox"
+                  id="invisible-login"
+                  checked={invisibleLogin}
+                  onChange={e => setInvisibleLogin(e.target.checked)}
+                />
+                <label htmlFor="invisible-login">Đăng nhập Ẩn mình (Sign in as Invisible)</label>
+              </div>
             </div>
 
-            {authError && <p className="authError" role="alert">{authError}</p>}
+            {activeError && <p className="authError" role="alert">{activeError}</p>}
 
             <button className="authSubmitBtn" type="submit" disabled={authenticating}>
               {authenticating

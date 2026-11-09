@@ -75,6 +75,11 @@ public sealed class AuthService(
 
     public async Task<LoginResponse> RefreshTokenAsync(RefreshTokenRequest request, CancellationToken cancellationToken = default)
     {
+        if (string.IsNullOrWhiteSpace(request.RefreshToken))
+        {
+            throw new AuthenticationException("Refresh token is required.");
+        }
+
         var (succeeded, accessToken, refreshToken, userId, username) =
             await identityService.RefreshTokenAsync(request.RefreshToken, cancellationToken);
 
@@ -95,8 +100,32 @@ public sealed class AuthService(
 
     public Task LogoutAsync(
         RefreshTokenRequest request,
-        CancellationToken cancellationToken = default) =>
-        identityService.RevokeTokenAsync(request.RefreshToken, cancellationToken);
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(request.RefreshToken))
+        {
+            return Task.CompletedTask;
+        }
+
+        return identityService.RevokeTokenAsync(request.RefreshToken, cancellationToken);
+    }
+
+    public async Task ChangePasswordAsync(
+        Guid userId,
+        ChangePasswordRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var (succeeded, errors) = await identityService.ChangePasswordAsync(
+            userId,
+            request.CurrentPassword,
+            request.NewPassword,
+            cancellationToken);
+
+        if (!succeeded)
+        {
+            throw new DomainException(string.Join(", ", errors));
+        }
+    }
 
     private sealed class PassthroughTransactionRunner : ITransactionRunner
     {

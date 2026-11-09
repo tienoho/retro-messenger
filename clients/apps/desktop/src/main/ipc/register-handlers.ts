@@ -10,6 +10,8 @@ import {
   type DesktopConversationRequest,
   type DesktopEnqueueMessageRequest,
   type DesktopLoginRequest,
+  type DesktopRegisterRequest,
+  type DesktopChangePasswordRequest,
   type DesktopNotificationRequest,
   type DesktopContactRequest,
   type DesktopDownloadAttachmentRequest,
@@ -22,6 +24,8 @@ import {
   validateConversationRequest,
   validateEnqueueMessageRequest,
   validateLoginRequest,
+  validateRegisterRequest,
+  validateChangePasswordRequest,
   validateNotificationRequest,
   validateContactRequest,
   validateDownloadAttachmentRequest,
@@ -85,6 +89,25 @@ export function registerDesktopIpcHandlers({
     const state = await session.login(request.username, request.password);
     void realtime.start();
     return state;
+  });
+
+  ipcMain.handle(desktopChannels.register, async (event, raw: unknown) => {
+    assertTrustedSender(event, expectedRendererUrl);
+    const request: DesktopRegisterRequest = validateRegisterRequest(raw);
+    const state = await session.register(
+      request.username,
+      request.displayName,
+      request.password,
+    );
+    void realtime.start();
+    return state;
+  });
+
+  ipcMain.handle(desktopChannels.changePassword, async (event, raw: unknown) => {
+    assertTrustedSender(event, expectedRendererUrl);
+    const request: DesktopChangePasswordRequest = validateChangePasswordRequest(raw);
+    await session.changePassword(request.currentPassword, request.newPassword);
+    return { success: true };
   });
 
   ipcMain.handle(desktopChannels.logout, async (event) => {

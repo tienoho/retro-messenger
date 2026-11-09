@@ -562,6 +562,7 @@ public sealed class Milestone5IntegrationTests(PostgresAndRedisFixture fixture)
         public List<(Guid ConversationId, Guid UserId)> ParticipantLeftEvents { get; } = [];
 
         public Task MessageReceived(MessageDto message) => Task.CompletedTask;
+        public Task MessageRead(Guid conversationId, Guid readerId, long sequence, DateTimeOffset readAt) => Task.CompletedTask;
         public Task TypingChanged(Guid conversationId, Guid userId, bool isTyping) => Task.CompletedTask;
         public Task BuzzReceived(Guid conversationId, Guid senderId, DateTimeOffset sentAt) => Task.CompletedTask;
         public Task PresenceChanged(Guid userId, string status, string? customStatus, DateTimeOffset occurredAt) => Task.CompletedTask;

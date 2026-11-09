@@ -14,6 +14,7 @@ import { DesktopWindowTitleBar } from "./components/DesktopWindowTitleBar";
 import { DesktopWindowMenuBar } from "./components/DesktopWindowMenuBar";
 import { DesktopCustomStatusDialog } from "./components/DesktopCustomStatusDialog";
 import { DesktopAboutDialog } from "./components/DesktopAboutDialog";
+import { DesktopChangePasswordDialog } from "./components/DesktopChangePasswordDialog";
 import { DesktopSkinPicker } from "./components/DesktopSkinPicker";
 import { DesktopCaroGameDialog } from "./components/DesktopCaroGameDialog";
 import {
@@ -39,6 +40,7 @@ export function DesktopApp() {
   const [section, setSection] = useState<"chats" | "contacts">("chats");
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [showAbout, setShowAbout] = useState(false);
+  const [showChangePassword, setShowChangePassword] = useState(false);
   const [showCustomStatus, setShowCustomStatus] = useState(false);
   const [showSkinPicker, setShowSkinPicker] = useState(false);
   const [showGameDialog, setShowGameDialog] = useState(false);
@@ -117,15 +119,25 @@ export function DesktopApp() {
   if (!session.authenticated || !session.user) {
     return (
       <DesktopAuth
+        mode={sessionState.mode}
         username={username}
+        displayName={sessionState.displayName}
         password={password}
+        confirmPassword={sessionState.confirmPassword}
+        rememberId={sessionState.rememberId}
+        invisibleLogin={sessionState.invisibleLogin}
         busy={busy}
         error={error}
         updater={updater}
+        onModeChange={sessionState.setMode}
         onUsernameChange={sessionState.setUsername}
+        onDisplayNameChange={sessionState.setDisplayName}
         onPasswordChange={sessionState.setPassword}
+        onConfirmPasswordChange={sessionState.setConfirmPassword}
+        onRememberIdChange={sessionState.setRememberId}
+        onInvisibleLoginChange={sessionState.setInvisibleLogin}
         onSubmit={async (event) => {
-          const ok = await sessionState.login(event);
+          const ok = await sessionState.submitAuth(event);
           if (ok) {
             await Promise.allSettled([
               conversationsState.loadConversations(),
@@ -200,6 +212,7 @@ export function DesktopApp() {
         onOpenAddFriend={() => setSection("contacts")}
         onOpenAbout={() => setShowAbout(true)}
         onOpenCustomStatus={() => setShowCustomStatus(true)}
+        onOpenChangePassword={() => setShowChangePassword(true)}
         onOpenSkinPicker={() => setShowSkinPicker(true)}
         onOpenGame={() => setShowGameDialog(true)}
         onSendBuzz={() => void conversationsState.sendBuzz()}
@@ -241,24 +254,6 @@ export function DesktopApp() {
             : "messengerShell"
         }
       >
-        <DesktopCallOverlay
-          callState={call.callState}
-          callType={call.callType}
-          callerName={call.callerName}
-          isMuted={call.isMuted}
-          isVideoOff={call.isVideoOff}
-          localStream={call.localStream}
-          remoteStream={call.remoteStream}
-          durationFormatted={call.durationFormatted}
-          localAudioLevel={call.localAudioLevel}
-          remoteAudioLevel={call.remoteAudioLevel}
-          onAccept={() => void call.acceptCall()}
-          onDecline={() => void call.declineCall()}
-          onLeave={() => void call.leaveCall()}
-          onToggleMute={call.toggleMute}
-          onToggleVideo={call.toggleVideo}
-        />
-
         <DesktopSidebar
           session={session}
           section={section}
@@ -365,6 +360,7 @@ export function DesktopApp() {
             error={error}
             imvironment={currentImvironment}
             onDownloadAttachment={conversationsState.downloadAttachment}
+            isTyping={conversationsState.typingUsers.size > 0}
           />
 
           <DesktopComposer
@@ -416,6 +412,31 @@ export function DesktopApp() {
       {showAbout && (
         <DesktopAboutDialog onClose={() => setShowAbout(false)} />
       )}
+
+      {showChangePassword && (
+        <DesktopChangePasswordDialog
+          onSave={sessionState.changePassword}
+          onClose={() => setShowChangePassword(false)}
+        />
+      )}
+
+      <DesktopCallOverlay
+        callState={call.callState}
+        callType={call.callType}
+        callerName={call.callerName}
+        isMuted={call.isMuted}
+        isVideoOff={call.isVideoOff}
+        localStream={call.localStream}
+        remoteStream={call.remoteStream}
+        durationFormatted={call.durationFormatted}
+        localAudioLevel={call.localAudioLevel}
+        remoteAudioLevel={call.remoteAudioLevel}
+        onAccept={() => void call.acceptCall()}
+        onDecline={() => void call.declineCall()}
+        onLeave={() => void call.leaveCall()}
+        onToggleMute={call.toggleMute}
+        onToggleVideo={call.toggleVideo}
+      />
     </div>
   );
 }

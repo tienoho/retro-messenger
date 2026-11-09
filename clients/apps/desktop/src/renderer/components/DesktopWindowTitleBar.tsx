@@ -14,7 +14,7 @@ export interface DesktopWindowTitleBarProps {
 }
 
 export function DesktopWindowTitleBar({
-  title = "Retro! Yahoo! Messenger",
+  title = "Yahoo! Messenger",
   displayName,
   status,
   soundEnabled,

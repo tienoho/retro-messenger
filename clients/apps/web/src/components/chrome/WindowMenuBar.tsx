@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   StatusDotOnline,
   StatusDotBusy,
@@ -21,6 +21,7 @@ export interface WindowMenuBarProps {
   onOpenRooms: () => void;
   onOpenAbout: () => void;
   onOpenCustomStatus?: (() => void) | undefined;
+  onOpenChangePassword?: (() => void) | undefined;
   onOpenSkinPicker?: (() => void) | undefined;
   onOpenGame?: (() => void) | undefined;
   onSendBuzz?: (() => void) | undefined;
@@ -36,12 +37,14 @@ export function WindowMenuBar({
   onOpenRooms,
   onOpenAbout,
   onOpenCustomStatus,
+  onOpenChangePassword,
   onOpenSkinPicker,
   onOpenGame,
   onSendBuzz,
   onStartCall,
   onChangeStatus,
 }: WindowMenuBarProps) {
+  const menuBarRef = useRef<HTMLElement | null>(null);
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
 
   const toggle = (menu: string) => {
@@ -50,8 +53,31 @@ export function WindowMenuBar({
 
   const close = () => setActiveMenu(null);
 
+  useEffect(() => {
+    if (!activeMenu) return;
+
+    const handleMouseDown = (e: MouseEvent) => {
+      if (menuBarRef.current && !menuBarRef.current.contains(e.target as Node)) {
+        close();
+      }
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        close();
+      }
+    };
+
+    document.addEventListener("mousedown", handleMouseDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handleMouseDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [activeMenu]);
+
   return (
-    <nav className="retroMenuBar" aria-label="Menu thanh tác vụ">
+    <nav className="retroMenuBar" ref={menuBarRef} aria-label="Menu thanh tác vụ">
       {/* Messenger menu */}
       <div className="retroMenuContainer">
         <div
@@ -114,6 +140,18 @@ export function WindowMenuBar({
               >
                 <IconPencil size={12} style={{ marginRight: 6 }} />
                 Đổi lời nhắn cá nhân…
+              </div>
+            )}
+            {onOpenChangePassword && (
+              <div
+                className="dropdownItem"
+                onClick={() => {
+                  close();
+                  onOpenChangePassword();
+                }}
+              >
+                <IconPencil size={12} style={{ marginRight: 6 }} />
+                Đổi mật khẩu tài khoản…
               </div>
             )}
             {onOpenSkinPicker && (
@@ -244,7 +282,7 @@ export function WindowMenuBar({
               }}
             >
               <IconInfo size={13} style={{ marginRight: 6 }} />
-              About Retro! Messenger...
+              About Yahoo! Messenger...
             </div>
           </div>
         )}

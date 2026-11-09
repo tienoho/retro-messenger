@@ -13,36 +13,81 @@ namespace RetroMessenger.Api.Endpoints;
 
 public static class AuthEndpoints
 {
+    private const string RefreshTokenCookieName = "retro_refresh_token";
+
     public static IEndpointRouteBuilder MapAuthEndpoints(this IEndpointRouteBuilder endpoints)
     {
         var group = endpoints.MapGroup("/api/v1/auth").WithTags("Authentication");
 
-        group.MapPost("/login", async (LoginRequest request, AuthService authService, CancellationToken ct) =>
+        group.MapPost("/login", async (LoginRequest request, AuthService authService, HttpContext context, CancellationToken ct) =>
         {
             var result = await authService.LoginAsync(request, ct);
+            SetRefreshTokenCookie(context, result.RefreshToken);
             return Results.Ok(result);
         }).RequireAuthRateLimiting(AuthRateLimitPolicies.Login);
 
-        group.MapPost("/register", async (RegisterRequest request, AuthService authService, CancellationToken ct) =>
+        group.MapPost("/register", async (RegisterRequest request, AuthService authService, HttpContext context, CancellationToken ct) =>
         {
             var result = await authService.RegisterAsync(request, ct);
+            SetRefreshTokenCookie(context, result.RefreshToken);
             return Results.Ok(result);
         }).RequireAuthRateLimiting(AuthRateLimitPolicies.Register);
 
-        group.MapPost("/refresh", async (RefreshTokenRequest request, AuthService authService, CancellationToken ct) =>
+        group.MapPost("/refresh", async (RefreshTokenRequest? request, AuthService authService, HttpContext context, CancellationToken ct) =>
         {
-            var result = await authService.RefreshTokenAsync(request, ct);
+            var token = !string.IsNullOrWhiteSpace(request?.RefreshToken)
+                ? request.RefreshToken
+                : context.Request.Cookies[RefreshTokenCookieName];
+
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                return Results.Json(
+                    new { error = "unauthorized", message = "No refresh token is available." },
+                    statusCode: StatusCodes.Status401Unauthorized);
+            }
+
+            var result = await authService.RefreshTokenAsync(new RefreshTokenRequest(token), ct);
+            SetRefreshTokenCookie(context, result.RefreshToken);
             return Results.Ok(result);
         }).RequireAuthRateLimiting(AuthRateLimitPolicies.Token);
 
         group.MapPost("/logout", async (
-            RefreshTokenRequest request,
+            RefreshTokenRequest? request,
+            AuthService authService,
+            HttpContext context,
+            CancellationToken ct) =>
+        {
+            var token = !string.IsNullOrWhiteSpace(request?.RefreshToken)
+                ? request.RefreshToken
+                : context.Request.Cookies[RefreshTokenCookieName];
+
+            if (!string.IsNullOrWhiteSpace(token))
+            {
+                await authService.LogoutAsync(new RefreshTokenRequest(token), ct);
+            }
+            ClearRefreshTokenCookie(context);
+            return Results.Ok(new { message = "Logged out successfully." });
+        }).RequireAuthRateLimiting(AuthRateLimitPolicies.Token);
+
+        group.MapGet("/session", async (ICurrentUserContext currentUser, IUserRepository userRepo, CancellationToken ct) =>
+        {
+            var user = await userRepo.GetByIdAsync(currentUser.UserId, ct);
+            if (user is null)
+            {
+                return Results.NotFound();
+            }
+            return Results.Ok(new SessionDto(user));
+        }).RequireAuthorization();
+
+        group.MapPut("/password", async (
+            ChangePasswordRequest request,
+            ICurrentUserContext currentUser,
             AuthService authService,
             CancellationToken ct) =>
         {
-            await authService.LogoutAsync(request, ct);
-            return Results.Ok(new { message = "Logged out successfully." });
-        }).RequireAuthRateLimiting(AuthRateLimitPolicies.Token);
+            await authService.ChangePasswordAsync(currentUser.UserId, request, ct);
+            return Results.Ok(new { message = "Password changed successfully." });
+        }).RequireAuthorization();
 
         // OpenIddict Connect Endpoints
         endpoints.MapPost("/connect/token", async (HttpContext httpContext, IIdentityService identityService, CancellationToken ct) =>
@@ -169,5 +214,25 @@ public static class AuthEndpoints
         .RequireAuthRateLimiting(AuthRateLimitPolicies.Token);
 
         return endpoints;
+    }
+
+    private static void SetRefreshTokenCookie(HttpContext context, string refreshToken)
+    {
+        context.Response.Cookies.Append(RefreshTokenCookieName, refreshToken, new CookieOptions
+        {
+            HttpOnly = true,
+            SameSite = SameSiteMode.Lax,
+            Path = "/",
+            Expires = DateTimeOffset.UtcNow.AddDays(30),
+            Secure = context.Request.IsHttps
+        });
+    }
+
+    private static void ClearRefreshTokenCookie(HttpContext context)
+    {
+        context.Response.Cookies.Delete(RefreshTokenCookieName, new CookieOptions
+        {
+            Path = "/"
+        });
     }
 }

@@ -38,6 +38,7 @@ export interface SidebarProps {
   rooms: RoomDto[];
   onCreateRoom: (title: string, description?: string) => Promise<unknown>;
   onJoinRoom: (roomId: string, roomName: string) => Promise<unknown>;
+  className?: string | undefined;
 }
 
 export function Sidebar({
@@ -62,11 +63,12 @@ export function Sidebar({
   rooms,
   onCreateRoom,
   onJoinRoom,
+  className,
 }: SidebarProps) {
   const [activeTab, setActiveTab] = useState<SidebarTab>("chats");
 
   return (
-    <aside className="sidebar">
+    <aside className={`sidebar ${className ?? ""}`.trim()}>
       <UserProfileStrip
         user={user}
         userStatus={userStatus}

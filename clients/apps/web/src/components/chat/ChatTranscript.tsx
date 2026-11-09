@@ -28,18 +28,28 @@ export interface ChatTranscriptProps {
   onDownloadAttachment: (attachmentId: string) => void;
   onReplayAudible?: ((text: string) => void) | undefined;
   isTyping: boolean;
+  lastReadSequence?: number | undefined;
 }
 
 export function ChatTranscript({
   messages,
   currentUserId,
-  activeConversationTitle = "Bạn bè",
+  activeConversationTitle,
   imvironment,
   onDownloadAttachment,
   onReplayAudible,
   isTyping,
+  lastReadSequence = 0,
 }: ChatTranscriptProps) {
   const bottomRef = useRef<HTMLDivElement | null>(null);
+
+  const peerInitial = (
+    activeConversationTitle?.trim().slice(0, 1) || "B"
+  ).toUpperCase();
+
+  const lastMineMessage = messages
+    .filter((m) => m.senderId === currentUserId)
+    .slice(-1)[0];
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -59,16 +69,33 @@ export function ChatTranscript({
         style={transcriptStyle}
         aria-live="polite"
       >
-        {messages.length === 0 && (
-          <div className="emptyState">
-            Chưa có tin nhắn nào trong cuộc trò chuyện này. Hãy gửi lời chào đầu
-            tiên hoặc rung một tiếng BUZZ!
+        {!activeConversationTitle ? (
+          <div className="emptyState welcomeStandbyState">
+            <div className="standbyLogo">Y!</div>
+            <h3>Chào mừng bạn đến với Yahoo! Messenger</h3>
+            <p>
+              Hãy chọn một cuộc trò chuyện từ danh bạ bên trái để bắt đầu nhắn
+              tin hoặc tham gia phòng chat.
+            </p>
           </div>
+        ) : (
+          <>
+            <div className="retroTranscriptNotice">
+              *** Phiên trò chuyện với <strong>{activeConversationTitle}</strong> ***
+            </div>
+
+            {messages.length === 0 && (
+              <div className="emptyState">
+                Chưa có tin nhắn nào trong cuộc trò chuyện này. Hãy gửi lời chào đầu
+                tiên hoặc rung một tiếng BUZZ!
+              </div>
+            )}
+          </>
         )}
 
         {messages.map((message) => {
           const isMine = message.senderId === currentUserId;
-          const senderLabel = isMine ? "Bạn" : activeConversationTitle;
+          const senderLabel = isMine ? "Bạn" : (activeConversationTitle || "Bạn bè");
 
           // BUZZ notification
           if (message.content === "BUZZ!!!" || message.content === "(BUZZ)") {
@@ -140,41 +167,97 @@ export function ChatTranscript({
                 >
                   {senderLabel}:
                 </span>
+                {isMine && (
+                  <>
+                    {lastReadSequence !== undefined &&
+                    lastReadSequence > 0 &&
+                    message.sequence > 0 &&
+                    message.sequence <= lastReadSequence ? (
+                      message.id === lastMineMessage?.id ||
+                      message.sequence === lastReadSequence ? (
+                        <span
+                          className="msgStatusSeen"
+                          title="Người nhận đã đọc tin nhắn này"
+                        >
+                          <span className="miniSeenAvatar">{peerInitial}</span>
+                          <span className="seenLabel">Đã xem</span>
+                        </span>
+                      ) : (
+                        <span
+                          className="msgStatusSent"
+                          title="Đã gửi thành công và đã xem"
+                        >
+                          <span className="sentCheckCircle">✓</span>
+                        </span>
+                      )
+                    ) : message.sequence > 0 ? (
+                      <span
+                        className="msgStatusSent"
+                        title="Đã gửi thành công tới máy chủ"
+                      >
+                        <span className="sentCheckCircle">✓</span>
+                        <span className="sentLabel">Đã gửi</span>
+                      </span>
+                    ) : (
+                      <span
+                        className="msgStatusPending"
+                        title="Đang gửi tin nhắn..."
+                      >
+                        <span className="pendingCircle" />
+                        <span className="pendingLabel">Đang gửi…</span>
+                      </span>
+                    )}
+                  </>
+                )}
               </div>
               <div className="transcriptContent">
-                {message.content.split("\n").map((line, index) => {
-                  const attachment = attachmentLinePattern.exec(line);
-                  return attachment ? (
-                    <button
-                      type="button"
-                      className="attachmentDownloadBtn"
-                      key={`${attachment[1]}-${index}`}
-                      onClick={() => onDownloadAttachment(attachment[1]!)}
-                    >
-                      <IconPaperclip size={13} style={{ marginRight: 4, verticalAlign: "middle" }} />
-                      {attachment[2]}
-                    </button>
-                  ) : (
-                    <span key={`${line}-${index}`}>
-                      {renderWithYahooEmoticons(line)}
-                    </span>
-                  );
-                })}
+                {attachmentLinePattern.test(message.content.trim()) ? (
+                  message.content.split("\n").map((line, index) => {
+                    const attachment = attachmentLinePattern.exec(line);
+                    return attachment ? (
+                      <button
+                        type="button"
+                        className="attachmentDownloadBtn"
+                        key={`${attachment[1]}-${index}`}
+                        onClick={() => onDownloadAttachment(attachment[1]!)}
+                      >
+                        <IconPaperclip size={13} style={{ marginRight: 4, verticalAlign: "middle" }} />
+                        {attachment[2]}
+                      </button>
+                    ) : (
+                      <span key={`${line}-${index}`}>
+                        {renderWithYahooEmoticons(line)}
+                      </span>
+                    );
+                  })
+                ) : (
+                  renderWithYahooEmoticons(message.content)
+                )}
               </div>
             </div>
           );
         })}
+
+        {/* Facebook Messenger-style Animated Typing Bubble */}
+        {isTyping && (
+          <div className="fbTypingContainer" aria-live="polite">
+            <div className="fbTypingAvatar">{peerInitial}</div>
+            <div className="fbTypingBubble">
+              <div className="fbTypingDots">
+                <span className="fbDot dot1" />
+                <span className="fbDot dot2" />
+                <span className="fbDot dot3" />
+              </div>
+            </div>
+            <span className="fbTypingText">
+              <IconPencil size={11} style={{ marginRight: 3, verticalAlign: "middle" }} />
+              {activeConversationTitle} đang nhập tin nhắn...
+            </span>
+          </div>
+        )}
+
         <div ref={bottomRef} />
       </div>
-
-      {isTyping && (
-        <div className="typingBar">
-          <span className="pencilIcon">
-            <IconPencil size={13} />
-          </span>{" "}
-          <strong>{activeConversationTitle}</strong> đang soạn tin nhắn...
-        </div>
-      )}
     </>
   );
 }

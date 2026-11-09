@@ -39,6 +39,16 @@ export class MobileSessionController {
     return response;
   }
 
+  public async register(
+    username: string,
+    displayName: string,
+    password: string,
+  ): Promise<AuthResponse> {
+    const response = await this.api.register(username, displayName, password);
+    await this.tokens.saveRefreshToken(response.refreshToken);
+    return response;
+  }
+
   public async refresh(): Promise<AuthResponse> {
     try {
       const response = await this.api.refreshSession();

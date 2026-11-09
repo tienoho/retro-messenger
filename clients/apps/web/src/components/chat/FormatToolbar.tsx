@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   YAHOO_FONTS,
   YAHOO_FONT_SIZES,
@@ -51,10 +51,39 @@ export function FormatToolbar({
   disabled,
   isUploading,
 }: FormatToolbarProps) {
+  const toolbarRef = useRef<HTMLDivElement | null>(null);
   const [showEmoticons, setShowEmoticons] = useState(false);
   const [showAudibles, setShowAudibles] = useState(false);
   const [showImvironment, setShowImvironment] = useState(false);
   const [showColorPicker, setShowColorPicker] = useState(false);
+
+  // Close all popups when clicking outside or pressing Escape
+  useEffect(() => {
+    const handleDocumentMouseDown = (e: MouseEvent) => {
+      if (toolbarRef.current && !toolbarRef.current.contains(e.target as Node)) {
+        setShowEmoticons(false);
+        setShowAudibles(false);
+        setShowImvironment(false);
+        setShowColorPicker(false);
+      }
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setShowEmoticons(false);
+        setShowAudibles(false);
+        setShowImvironment(false);
+        setShowColorPicker(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleDocumentMouseDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handleDocumentMouseDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
 
   const toggleBold = () => {
     onFontStyleChange((prev) => ({ ...prev, bold: !prev.bold }));
@@ -71,208 +100,256 @@ export function FormatToolbar({
   const isBuzzCooling = buzzCooldownSeconds > 0;
 
   return (
-    <div className="formatToolbar">
-      {/* Font Family selector */}
-      <select
-        className="fontSelect"
-        aria-label="Kiểu chữ"
-        value={fontStyle.fontFamily}
-        disabled={disabled}
-        onChange={(e) =>
-          onFontStyleChange((prev) => ({ ...prev, fontFamily: e.target.value }))
-        }
-      >
-        {YAHOO_FONTS.map((font) => (
-          <option key={font} value={font} style={{ fontFamily: font }}>
-            {font}
-          </option>
-        ))}
-      </select>
+    <div className="formatToolbar" ref={toolbarRef}>
+      <div className="formatToolbarInner">
+        {/* Font Family selector */}
+        <select
+          className="fontSelect"
+          aria-label="Kiểu chữ"
+          value={fontStyle.fontFamily}
+          disabled={disabled}
+          onChange={(e) =>
+            onFontStyleChange((prev) => ({ ...prev, fontFamily: e.target.value }))
+          }
+        >
+          {YAHOO_FONTS.map((font) => (
+            <option key={font} value={font} style={{ fontFamily: font }}>
+              {font}
+            </option>
+          ))}
+        </select>
 
-      {/* Font Size selector */}
-      <select
-        className="fontSizeSelect"
-        aria-label="Cỡ chữ"
-        value={fontStyle.fontSize}
-        disabled={disabled}
-        onChange={(e) =>
-          onFontStyleChange((prev) => ({ ...prev, fontSize: e.target.value }))
-        }
-      >
-        {YAHOO_FONT_SIZES.map((size) => (
-          <option key={size.value} value={size.value}>
-            {size.label}
-          </option>
-        ))}
-      </select>
+        {/* Font Size selector */}
+        <select
+          className="fontSizeSelect"
+          aria-label="Cỡ chữ"
+          value={fontStyle.fontSize}
+          disabled={disabled}
+          onChange={(e) =>
+            onFontStyleChange((prev) => ({ ...prev, fontSize: e.target.value }))
+          }
+        >
+          {YAHOO_FONT_SIZES.map((size) => (
+            <option key={size.value} value={size.value}>
+              {size.label}
+            </option>
+          ))}
+        </select>
 
-      {/* Color picker button */}
-      <button
-        type="button"
-        className="colorPickerBtn"
-        title="Chọn màu chữ"
-        disabled={disabled}
-        onClick={() => setShowColorPicker((prev) => !prev)}
-      >
-        <span
-          className="colorIndicator"
-          style={{ backgroundColor: fontStyle.color }}
-        />
-        <span>Màu ▼</span>
-      </button>
+        {/* Color picker button */}
+        <button
+          type="button"
+          className="colorPickerBtn"
+          title="Chọn màu chữ"
+          disabled={disabled}
+          onClick={() => {
+            setShowColorPicker((prev) => !prev);
+            setShowEmoticons(false);
+            setShowAudibles(false);
+            setShowImvironment(false);
+          }}
+        >
+          <span
+            className="colorIndicator"
+            style={{ backgroundColor: fontStyle.color }}
+          />
+          <span>Màu ▼</span>
+        </button>
 
-      {/* Format styling toggles */}
-      <button
-        type="button"
-        className={`formatBtn ${fontStyle.bold ? "active" : ""}`}
-        title="In đậm (Bold)"
-        disabled={disabled}
-        onClick={toggleBold}
-      >
-        <strong>B</strong>
-      </button>
-      <button
-        type="button"
-        className={`formatBtn ${fontStyle.italic ? "active" : ""}`}
-        title="In nghiêng (Italic)"
-        disabled={disabled}
-        onClick={toggleItalic}
-      >
-        <em>I</em>
-      </button>
-      <button
-        type="button"
-        className={`formatBtn ${fontStyle.underline ? "active" : ""}`}
-        title="Gạch chân (Underline)"
-        disabled={disabled}
-        onClick={toggleUnderline}
-      >
-        <u>U</u>
-      </button>
+        {/* Format styling toggles */}
+        <button
+          type="button"
+          className={`formatBtn ${fontStyle.bold ? "active" : ""}`}
+          title="In đậm (Ctrl+B)"
+          disabled={disabled}
+          onClick={toggleBold}
+        >
+          <strong>B</strong>
+        </button>
+        <button
+          type="button"
+          className={`formatBtn ${fontStyle.italic ? "active" : ""}`}
+          title="In nghiêng (Ctrl+I)"
+          disabled={disabled}
+          onClick={toggleItalic}
+        >
+          <em>I</em>
+        </button>
+        <button
+          type="button"
+          className={`formatBtn ${fontStyle.underline ? "active" : ""}`}
+          title="Gạch chân (Ctrl+U)"
+          disabled={disabled}
+          onClick={toggleUnderline}
+        >
+          <u>U</u>
+        </button>
 
-      <span className="toolbarSeparator" />
+        <span className="toolbarSeparator" />
 
-      {/* Emoticons toggle */}
-      <button
-        type="button"
-        className="emoticonToggleBtn"
-        title="Biểu tượng cảm xúc Yahoo!"
-        onClick={() => {
-          setShowEmoticons((prev) => !prev);
-          setShowAudibles(false);
-          setShowImvironment(false);
-          setShowColorPicker(false);
-        }}
-        disabled={disabled}
-      >
-        <SmileyHappy size={14} style={{ marginRight: 4, verticalAlign: "middle" }} />
-        Biểu cảm ▼
-      </button>
+        {/* Emoticons toggle */}
+        <button
+          type="button"
+          className="emoticonToggleBtn"
+          title="Biểu tượng cảm xúc Yahoo!"
+          onClick={() => {
+            setShowEmoticons((prev) => !prev);
+            setShowAudibles(false);
+            setShowImvironment(false);
+            setShowColorPicker(false);
+          }}
+          disabled={disabled}
+        >
+          <SmileyHappy size={14} style={{ marginRight: 4, verticalAlign: "middle" }} />
+          Biểu cảm ▼
+        </button>
 
-      {/* Audibles toggle */}
-      <button
-        type="button"
-        className="audibleToggleBtn"
-        title="Yahoo! Audibles - Lời chào âm thanh"
-        onClick={() => {
-          setShowAudibles((prev) => !prev);
-          setShowEmoticons(false);
-          setShowImvironment(false);
-          setShowColorPicker(false);
-        }}
-        disabled={disabled}
-      >
-        <IconAudibles size={14} style={{ marginRight: 4, verticalAlign: "middle" }} />
-        Audibles ▼
-      </button>
+        {/* Audibles toggle */}
+        <button
+          type="button"
+          className="audibleToggleBtn"
+          title="Yahoo! Audibles - Lời chào âm thanh"
+          onClick={() => {
+            setShowAudibles((prev) => !prev);
+            setShowEmoticons(false);
+            setShowImvironment(false);
+            setShowColorPicker(false);
+          }}
+          disabled={disabled}
+        >
+          <IconAudibles size={14} style={{ marginRight: 4, verticalAlign: "middle" }} />
+          Audibles ▼
+        </button>
 
-      {/* IMVironment toggle */}
-      <button
-        type="button"
-        className="imvToggleBtn"
-        title="Chọn phông nền IMVironment"
-        onClick={() => {
-          setShowImvironment((prev) => !prev);
-          setShowEmoticons(false);
-          setShowAudibles(false);
-          setShowColorPicker(false);
-        }}
-        disabled={disabled}
-      >
-        <IconPalette size={14} style={{ marginRight: 4, verticalAlign: "middle" }} />
-        IMVironment ▼
-      </button>
-
-      {/* Yahoo! Games toggle */}
-      {onOpenGame && (
+        {/* IMVironment toggle */}
         <button
           type="button"
           className="imvToggleBtn"
-          title="Yahoo! Games - Chơi cờ Caro cùng bạn bè"
-          disabled={disabled}
-          onClick={onOpenGame}
-        >
-          <IconGame size={14} style={{ marginRight: 4, verticalAlign: "middle" }} />
-          Trò chơi
-        </button>
-      )}
-
-      {/* Attachment */}
-      <AttachmentPicker
-        onFileSelect={onFileSelect}
-        disabled={isUploading || disabled}
-      />
-
-      {/* BUZZ! Button */}
-      <button
-        type="button"
-        className="buzzButton"
-        title={
-          isBuzzCooling
-            ? `Vui lòng đợi ${buzzCooldownSeconds}s để Buzz tiếp`
-            : "Rung chuông BUZZ! gây chú ý"
-        }
-        disabled={disabled || isBuzzCooling}
-        onClick={onSendBuzz}
-      >
-        <IconBuzz size={13} style={{ marginRight: 4, verticalAlign: "middle" }} />
-        {isBuzzCooling ? `BUZZ (${buzzCooldownSeconds}s)` : "BUZZ!"}
-      </button>
-
-      {/* Popups */}
-      {showEmoticons && (
-        <EmoticonPicker
-          onSelect={(code) => {
-            onInsertEmoticon(code);
+          title="Chọn phông nền IMVironment"
+          onClick={() => {
+            setShowImvironment((prev) => !prev);
             setShowEmoticons(false);
+            setShowAudibles(false);
+            setShowColorPicker(false);
           }}
+          disabled={disabled}
+        >
+          <IconPalette size={14} style={{ marginRight: 4, verticalAlign: "middle" }} />
+          IMVironment ▼
+        </button>
+
+        {/* Yahoo! Games toggle */}
+        {onOpenGame && (
+          <button
+            type="button"
+            className="imvToggleBtn"
+            title="Yahoo! Games - Chơi cờ Caro cùng bạn bè"
+            disabled={disabled}
+            onClick={onOpenGame}
+          >
+            <IconGame size={14} style={{ marginRight: 4, verticalAlign: "middle" }} />
+            Trò chơi
+          </button>
+        )}
+
+        {/* Attachment */}
+        <AttachmentPicker
+          onFileSelect={onFileSelect}
+          disabled={isUploading || disabled}
         />
+
+        {/* BUZZ! Button */}
+        <button
+          type="button"
+          className="buzzButton"
+          title={
+            isBuzzCooling
+              ? `Vui lòng đợi ${buzzCooldownSeconds}s để Buzz tiếp (hoặc phím tắt Ctrl+G)`
+              : "Rung chuông BUZZ! gây chú ý (hoặc phím tắt Ctrl+G)"
+          }
+          disabled={disabled || isBuzzCooling}
+          onClick={onSendBuzz}
+        >
+          <IconBuzz size={13} style={{ marginRight: 4, verticalAlign: "middle" }} />
+          {isBuzzCooling ? `BUZZ (${buzzCooldownSeconds}s)` : "BUZZ!"}
+        </button>
+      </div>
+
+      {/* Fixed Popups that cannot be clipped by .chat or scroll containers */}
+      {showEmoticons && (
+        <div
+          className="retroPickerBackdrop"
+          onClick={() => setShowEmoticons(false)}
+        >
+          <div
+            className="retroPickerContainer"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <EmoticonPicker
+              onSelect={(code) => {
+                onInsertEmoticon(code);
+                setShowEmoticons(false);
+              }}
+              onClose={() => setShowEmoticons(false)}
+            />
+          </div>
+        </div>
       )}
 
       {showAudibles && (
-        <AudiblePicker
-          onSelectAudible={onSendAudible}
-          onClose={() => setShowAudibles(false)}
-        />
+        <div
+          className="retroPickerBackdrop"
+          onClick={() => setShowAudibles(false)}
+        >
+          <div
+            className="retroPickerContainer"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <AudiblePicker
+              onSelectAudible={onSendAudible}
+              onClose={() => setShowAudibles(false)}
+            />
+          </div>
+        </div>
       )}
 
       {showImvironment && (
-        <ImvironmentPicker
-          currentId={currentImvironmentId}
-          onSelect={onSelectImvironment}
-          onClose={() => setShowImvironment(false)}
-        />
+        <div
+          className="retroPickerBackdrop"
+          onClick={() => setShowImvironment(false)}
+        >
+          <div
+            className="retroPickerContainer"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <ImvironmentPicker
+              currentId={currentImvironmentId}
+              onSelect={onSelectImvironment}
+              onClose={() => setShowImvironment(false)}
+            />
+          </div>
+        </div>
       )}
 
       {showColorPicker && (
-        <FontColorPicker
-          currentColor={fontStyle.color}
-          onSelectColor={(color) => {
-            onFontStyleChange((prev) => ({ ...prev, color }));
-            setShowColorPicker(false);
-          }}
-          onClose={() => setShowColorPicker(false)}
-        />
+        <div
+          className="retroPickerBackdrop"
+          onClick={() => setShowColorPicker(false)}
+        >
+          <div
+            className="retroPickerContainer"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <FontColorPicker
+              currentColor={fontStyle.color}
+              onSelectColor={(color) => {
+                onFontStyleChange((prev) => ({ ...prev, color }));
+                setShowColorPicker(false);
+              }}
+              onClose={() => setShowColorPicker(false)}
+            />
+          </div>
+        </div>
       )}
     </div>
   );

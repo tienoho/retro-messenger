@@ -79,7 +79,16 @@ export function useMobileChat(): UseMobileChatResult {
     const unsubMsg = realtime.onMessage((message: MessageDto) => {
       if (message.conversationId === conversationIdRef.current) {
         setMessages((current) => {
-          if (current.some((m) => m.id === message.id)) return current;
+          if (
+            current.some(
+              (m) =>
+                m.id === message.id ||
+                (Boolean(message.clientMessageId) &&
+                  m.clientMessageId === message.clientMessageId),
+            )
+          ) {
+            return current;
+          }
           return [...current, message].sort(
             (left, right) => left.sequence - right.sequence,
           );

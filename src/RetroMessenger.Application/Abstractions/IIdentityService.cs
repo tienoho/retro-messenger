@@ -15,4 +15,7 @@ public interface IIdentityService
         string refreshToken, CancellationToken cancellationToken = default);
 
     Task RevokeTokenAsync(string token, CancellationToken cancellationToken = default);
+
+    Task<(bool Succeeded, string[] Errors)> ChangePasswordAsync(
+        Guid userId, string currentPassword, string newPassword, CancellationToken cancellationToken = default);
 }

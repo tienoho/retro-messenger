@@ -252,6 +252,32 @@ public sealed class IdentityService : IIdentityService
         await _db.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task<(bool Succeeded, string[] Errors)> ChangePasswordAsync(
+        Guid userId,
+        string currentPassword,
+        string newPassword,
+        CancellationToken cancellationToken = default)
+    {
+        if (_userManager is not null)
+        {
+            var user = await _userManager.FindByIdAsync(userId.ToString());
+            if (user is null)
+            {
+                return (false, ["User not found."]);
+            }
+
+            var result = await _userManager.ChangePasswordAsync(user, currentPassword, newPassword);
+            if (!result.Succeeded)
+            {
+                return (false, result.Errors.Select(e => e.Description).ToArray());
+            }
+
+            return (true, []);
+        }
+
+        return (false, ["User manager is not configured."]);
+    }
+
     private async Task<(bool Succeeded, string AccessToken, string RefreshToken, Guid UserId, string Username)> RotateInMemoryAsync(
         string tokenHash,
         Guid userId,

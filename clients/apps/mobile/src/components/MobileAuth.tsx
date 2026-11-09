@@ -8,23 +8,35 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export interface MobileAuthProps {
+  mode?: "login" | "register";
   username: string;
+  displayName?: string;
   password: string;
+  confirmPassword?: string;
   busy: boolean;
   error: string | null;
+  onModeChange?: (mode: "login" | "register") => void;
   onUsernameChange: (value: string) => void;
+  onDisplayNameChange?: (value: string) => void;
   onPasswordChange: (value: string) => void;
+  onConfirmPasswordChange?: (value: string) => void;
   onSubmit: () => void;
   onSelectDemo: (user: string, pass: string) => void;
 }
 
 export function MobileAuth({
+  mode = "login",
   username,
+  displayName = "",
   password,
+  confirmPassword = "",
   busy,
   error,
+  onModeChange,
   onUsernameChange,
+  onDisplayNameChange,
   onPasswordChange,
+  onConfirmPasswordChange,
   onSubmit,
   onSelectDemo,
 }: MobileAuthProps) {
@@ -41,20 +53,61 @@ export function MobileAuth({
           </View>
         </View>
 
-        <View style={styles.demoRow}>
-          <TouchableOpacity
-            style={styles.demoButton}
-            onPress={() => onSelectDemo("honganh", "RetroPass123!")}
-          >
-            <Text style={styles.demoButtonText}>Demo: honganh</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.demoButton}
-            onPress={() => onSelectDemo("hoangnam", "RetroPass123!")}
-          >
-            <Text style={styles.demoButtonText}>Demo: hoangnam</Text>
-          </TouchableOpacity>
-        </View>
+        {onModeChange && (
+          <View style={styles.modeToggleRow}>
+            <TouchableOpacity
+              style={[styles.modeTab, mode === "login" && styles.modeTabActive]}
+              onPress={() => onModeChange("login")}
+            >
+              <Text style={[styles.modeTabText, mode === "login" && styles.modeTabTextActive]}>
+                Đăng nhập
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.modeTab, mode === "register" && styles.modeTabActive]}
+              onPress={() => onModeChange("register")}
+            >
+              <Text style={[styles.modeTabText, mode === "register" && styles.modeTabTextActive]}>
+                Đăng ký
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {mode === "login" && (
+          <View style={styles.demoRow}>
+            <TouchableOpacity
+              style={styles.demoButton}
+              onPress={() => onSelectDemo("honganh", "RetroPass123!")}
+            >
+              <Text style={styles.demoButtonText}>honganh</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.demoButton}
+              onPress={() => onSelectDemo("hoangnam", "RetroPass123!")}
+            >
+              <Text style={styles.demoButtonText}>hoangnam</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.demoButton}
+              onPress={() => onSelectDemo("retro_tester", "RetroPass123!")}
+            >
+              <Text style={styles.demoButtonText}>retro_tester</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {mode === "register" && onDisplayNameChange && (
+          <TextInput
+            autoCapitalize="words"
+            autoComplete="name"
+            placeholder="Tên hiển thị (Nickname)"
+            placeholderTextColor="#887799"
+            style={styles.authInput}
+            value={displayName}
+            onChangeText={onDisplayNameChange}
+          />
+        )}
 
         <TextInput
           autoCapitalize="none"
@@ -66,7 +119,7 @@ export function MobileAuth({
           onChangeText={onUsernameChange}
         />
         <TextInput
-          autoComplete="password"
+          autoComplete={mode === "login" ? "password" : "new-password"}
           placeholder="Mật khẩu"
           placeholderTextColor="#887799"
           secureTextEntry
@@ -75,6 +128,19 @@ export function MobileAuth({
           onChangeText={onPasswordChange}
           onSubmitEditing={onSubmit}
         />
+
+        {mode === "register" && onConfirmPasswordChange && (
+          <TextInput
+            autoComplete="new-password"
+            placeholder="Xác nhận mật khẩu"
+            placeholderTextColor="#887799"
+            secureTextEntry
+            style={styles.authInput}
+            value={confirmPassword}
+            onChangeText={onConfirmPasswordChange}
+            onSubmitEditing={onSubmit}
+          />
+        )}
 
         {error && <Text style={styles.error}>{error}</Text>}
 
@@ -85,9 +151,26 @@ export function MobileAuth({
           onPress={onSubmit}
         >
           <Text style={styles.primaryButtonText}>
-            {busy ? "Đang kết nối…" : "Đăng nhập Yahoo!"}
+            {busy
+              ? "Đang kết nối…"
+              : mode === "login"
+                ? "Đăng nhập Yahoo!"
+                : "Tạo tài khoản Yahoo!"}
           </Text>
         </TouchableOpacity>
+
+        {onModeChange && (
+          <TouchableOpacity
+            style={styles.togglePrompt}
+            onPress={() => onModeChange(mode === "login" ? "register" : "login")}
+          >
+            <Text style={styles.togglePromptText}>
+              {mode === "login"
+                ? "Chưa có tài khoản Yahoo? Đăng ký ngay"
+                : "Đã có tài khoản? Quay lại đăng nhập"}
+            </Text>
+          </TouchableOpacity>
+        )}
       </View>
     </SafeAreaView>
   );
@@ -170,5 +253,39 @@ const styles = StyleSheet.create({
   primaryButtonText: { color: "#ffffff", fontWeight: "800", fontSize: 14 },
   disabled: { opacity: 0.5 },
   error: { color: "#cc0000", fontSize: 12 },
+  modeToggleRow: {
+    flexDirection: "row",
+    backgroundColor: "#dcd1ed",
+    borderRadius: 16,
+    padding: 2,
+    marginVertical: 4,
+  },
+  modeTab: {
+    flex: 1,
+    paddingVertical: 6,
+    alignItems: "center",
+    borderRadius: 14,
+  },
+  modeTabActive: {
+    backgroundColor: "#5b1e84",
+  },
+  modeTabText: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#5b1e84",
+  },
+  modeTabTextActive: {
+    color: "#ffffff",
+  },
+  togglePrompt: {
+    alignItems: "center",
+    marginTop: 6,
+  },
+  togglePromptText: {
+    color: "#5b1e84",
+    fontSize: 12,
+    fontWeight: "600",
+    textDecorationLine: "underline",
+  },
 });
 

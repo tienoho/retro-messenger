@@ -72,6 +72,14 @@ public sealed class ChatHub(
             .TypingChanged(conversationId, userId, false);
     }
 
+    public async Task MarkRead(Guid conversationId, long sequence)
+    {
+        await EnsureMembershipAsync(conversationId);
+        var readerId = CurrentUserId;
+        await Clients.OthersInGroup(ConversationGroup(conversationId))
+            .MessageRead(conversationId, readerId, sequence, DateTimeOffset.UtcNow);
+    }
+
     public async Task SendBuzz(Guid conversationId)
     {
         await EnsureMembershipAsync(conversationId);

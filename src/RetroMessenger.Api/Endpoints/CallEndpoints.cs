@@ -18,7 +18,9 @@ public static class CallEndpoints
         {
             if (!currentUser.IsAuthenticated)
             {
-                return Results.Unauthorized();
+                return Results.Json(
+                    new { error = "unauthorized", message = "User is not authenticated." },
+                    statusCode: StatusCodes.Status401Unauthorized);
             }
 
             try

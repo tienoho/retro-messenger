@@ -1,25 +1,26 @@
 /* ==========================================================================
-   RETRO MESSENGER DESKTOP — CLASSIC YAHOO! MESSENGER THEME
+   RETRO MESSENGER DESKTOP — NEO-RETRO YAHOO! THEME (MODERN NOSTALGIA)
    ========================================================================== */
 
 :root {
-  --yahoo-purple-dark: #3a1154;
+  --yahoo-purple-dark: #3b0764;
   --yahoo-purple: #5b1e84;
-  --yahoo-purple-light: #7a2ea8;
-  --yahoo-purple-gradient: linear-gradient(180deg, #6c238f 0%, #541973 45%, #42125d 50%, #5d1f7e 100%);
+  --yahoo-purple-light: #7c3aed;
+  --yahoo-purple-vibrant: #8b5cf6;
+  --yahoo-purple-gradient: linear-gradient(90deg, #5b1e84 0%, #7d2ba6 50%, #5b1e84 100%);
   --yahoo-yellow: #fed633;
-  --yahoo-gold: #ffb700;
-  --yahoo-red: #cc0000;
-  --yahoo-blue: #0000cc;
-  --window-bg: #ede7f6;
-  --window-border: #4a1563;
+  --yahoo-gold: #f59e0b;
+  --yahoo-red: #ef4444;
+  --yahoo-blue: #2563eb;
+  --window-bg: #f8f6fc;
+  --window-border: rgba(91, 30, 132, 0.25);
   --panel-bg: #ffffff;
-  --panel-border: #7f9db9;
-  --btn-gradient: linear-gradient(180deg, #ffffff 0%, #ede9d8 50%, #dcd7c5 100%);
-  --btn-hover: linear-gradient(180deg, #ffffff 0%, #fff2ba 50%, #fed85a 100%);
-  --btn-active: linear-gradient(180deg, #d8d0bf 0%, #ebe7db 100%);
-  --font-retro: Tahoma, "Segoe UI", Arial, sans-serif;
-  color: #202020;
+  --panel-border: #e8dff5;
+  --btn-gradient: linear-gradient(180deg, #ffffff 0%, #f6f0fc 100%);
+  --btn-hover: linear-gradient(180deg, #ffffff 0%, #ede6f8 100%);
+  --btn-active: linear-gradient(180deg, #e4d8f5 0%, #dcd1ed 100%);
+  --font-retro: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: #1e1b4b;
   font-family: var(--font-retro);
   background: var(--window-bg);
 }
@@ -28,13 +29,37 @@
   box-sizing: border-box;
 }
 
+/* Modern Sleek Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.03);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d4c8e6;
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a894c7;
+}
+
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
   font-family: var(--font-retro);
-  font-size: 12px;
+  font-size: 13px;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 button, input, select {
@@ -66,39 +91,42 @@ button:disabled {
 .loadingScreen {
   color: #ffffff;
   font-size: 14px;
+  font-weight: 600;
 }
 
 .authStack {
-  width: min(100%, 400px);
+  width: min(100%, 420px);
   display: grid;
-  gap: 12px;
+  gap: 14px;
 }
 
 .authPanel {
   width: 100%;
-  padding: 24px;
-  border: 2px solid #5b1e84;
-  border-radius: 6px;
-  background: #ede7f6;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  padding: 28px 24px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
 }
 
 .brandMark {
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
   display: grid;
   place-items: center;
-  border-radius: 6px;
+  border-radius: 12px;
   color: #471a68;
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 900;
-  background: var(--yahoo-yellow);
-  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+  background: linear-gradient(135deg, #ffe066 0%, #fed633 100%);
+  box-shadow: 0 4px 12px rgba(254, 214, 51, 0.4);
 }
 
 .eyebrow {
   margin: 14px 0 4px;
-  color: var(--yahoo-purple);
+  color: #7c3aed;
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.12em;
@@ -107,13 +135,14 @@ button:disabled {
 .authPanel h1 {
   margin: 0;
   font-size: 22px;
-  color: var(--yahoo-purple-dark);
+  color: #1e1b4b;
+  font-weight: 800;
 }
 
 .authCopy {
-  color: #554466;
-  font-size: 11px;
-  margin: 4px 0 16px;
+  color: #64748b;
+  font-size: 12px;
+  margin: 4px 0 18px;
 }
 
 .authPanel form {
@@ -123,52 +152,88 @@ button:disabled {
 
 .authPanel label {
   display: grid;
-  gap: 4px;
-  color: #331144;
-  font-size: 11px;
-  font-weight: bold;
+  gap: 5px;
+  color: #3b0764;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .authPanel input {
   width: 100%;
-  padding: 6px 8px;
-  border: 1px solid #7f9db9;
-  border-radius: 2px;
+  padding: 8px 12px;
+  border: 1px solid #dcd1ed;
+  border-radius: 8px;
   background: #ffffff;
-  box-shadow: inset 1px 1px 1px rgba(0,0,0,0.15);
-  color: #111111;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+  color: #1e1b4b;
+  font-size: 13px;
+  outline: none;
+  transition: all 0.2s ease;
 }
 
 .authPanel input:focus {
-  border-color: #5b1e84;
-  outline: none;
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12);
 }
 
 .primaryButton {
-  padding: 8px 16px;
-  background: var(--btn-gradient);
-  border: 1px solid #7f9db9;
-  border-radius: 3px;
-  font-size: 12px;
-  font-weight: bold;
-  color: #110022;
-  box-shadow: inset 0 1px 0 #ffffff;
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #7c3aed 0%, #581c87 100%);
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffffff;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+  transition: all 0.15s ease;
+  width: 100%;
+  white-space: nowrap;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .primaryButton:hover:not(:disabled) {
-  background: var(--btn-hover);
-  border-color: #e5a700;
+  background: linear-gradient(135deg, #8b5cf6 0%, #6b21a8 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(124, 58, 237, 0.4);
 }
 
 .primaryButton:active:not(:disabled) {
-  background: var(--btn-active);
-  box-shadow: inset 0 1px 2px rgba(0,0,0,0.3);
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(124, 58, 237, 0.3);
+}
+
+.secondaryButton {
+  padding: 8px 16px;
+  background: #ffffff;
+  border: 1px solid #dcd1ed;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #4a156d;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.secondaryButton:hover:not(:disabled) {
+  background: #f5edfc;
+  border-color: #c4b0e5;
+  color: #6d28d9;
 }
 
 .error {
   margin: 0;
-  color: #cc0000;
+  color: #ef4444;
   font-size: 11px;
+  font-weight: 600;
 }
 
 /* ==========================================================================
@@ -181,188 +246,225 @@ button:disabled {
   height: 100vh;
   min-height: 560px;
   overflow: hidden;
-  background: #ede7f6;
-  border: 2px solid #5b1e84;
+  background: #ffffff;
+  border: 1px solid rgba(91, 30, 132, 0.25);
 }
 
 /* Classic Yahoo Window Title Bar */
 .retroWindowBar {
-  height: 28px;
-  background: var(--yahoo-purple-gradient);
+  height: 36px;
+  background: linear-gradient(90deg, #5b1e84 0%, #7d2ba6 50%, #5b1e84 100%);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 8px;
+  gap: 8px;
+  padding: 0 12px;
   color: #ffffff;
   user-select: none;
-  border-bottom: 1px solid #360f4a;
+  border-bottom: 1px solid #431263;
   -webkit-app-region: drag;
+  min-width: 0;
 }
 
 .retroWindowBrand {
   display: flex;
   align-items: center;
-  gap: 7px;
-  font-weight: bold;
-  font-size: 12px;
-  text-shadow: 1px 1px 1px #000;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 13px;
   -webkit-app-region: drag;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .windowTitleText {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  min-width: 0;
   max-width: 500px;
 }
 
 .retroWindowControls {
   display: flex;
-  gap: 3px;
+  gap: 5px;
   -webkit-app-region: no-drag;
+  flex-shrink: 0;
 }
 
 .winControlBtn {
-  width: 20px;
-  height: 18px;
+  width: 26px;
+  height: 22px;
   padding: 0;
-  border: 1px solid #360f4a;
-  border-radius: 2px;
-  background: linear-gradient(180deg, #ffffff 0%, #c4b5d6 100%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
   cursor: pointer;
-  font-size: 10px;
-  font-weight: bold;
-  line-height: 14px;
+  font-size: 11px;
+  font-weight: 700;
   display: inline-grid;
   place-items: center;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
 }
 
 .winControlBtn.closeBtn {
-  background: linear-gradient(180deg, #ff7777 0%, #cc2222 100%);
-  color: white;
-  border-color: #661111;
+  background: rgba(239, 68, 68, 0.75);
+  border-color: rgba(239, 68, 68, 0.85);
 }
 
 .winControlBtn:hover {
-  filter: brightness(1.15);
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.winControlBtn.closeBtn:hover {
+  background: #ef4444;
 }
 
 /* Classic Menu Bar */
 .retroMenuBar {
   display: flex;
-  gap: 12px;
-  padding: 3px 10px;
-  background: #ede7f6;
-  border-bottom: 1px solid #d5c8e4;
-  font-size: 11px;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px;
+  background: #ffffff;
+  border-bottom: 1px solid #ede6f8;
+  font-size: 12px;
   user-select: none;
   position: relative;
   z-index: 50;
   -webkit-app-region: no-drag;
+  overflow: visible;
+  flex-wrap: wrap;
 }
 
 .retroMenuContainer {
   position: relative;
+  flex-shrink: 0;
 }
 
 .retroMenuItem {
   color: #331144;
   cursor: pointer;
-  padding: 2px 6px;
-  border-radius: 2px;
-  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
 }
 
 .retroMenuItem:hover,
 .retroMenuItem.active {
-  background: #316ac5;
-  color: #ffffff;
+  background: #f5edfc;
+  color: #6d28d9;
 }
 
 .menuDropdown {
   position: absolute;
   top: 100%;
   left: 0;
-  background: #f7f4fc;
-  border: 1px solid #7f9db9;
-  box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.25);
-  min-width: 190px;
+  background: #ffffff;
+  border: 1px solid #e2d6f4;
+  box-shadow: 0 10px 25px rgba(91, 30, 132, 0.15), 0 2px 6px rgba(0, 0, 0, 0.04);
+  min-width: 200px;
+  max-width: calc(100vw - 32px);
   z-index: 1000;
-  padding: 3px 0;
-  border-radius: 2px;
+  padding: 6px;
+  border-radius: 10px;
+  backdrop-filter: blur(8px);
+}
+
+.retroMenuContainer:last-child .menuDropdown,
+.retroMenuContainer:nth-last-child(2) .menuDropdown {
+  left: auto;
+  right: 0;
 }
 
 .dropdownHeader {
-  padding: 4px 10px;
+  padding: 6px 10px;
   font-size: 10px;
-  font-weight: bold;
-  color: #665577;
+  font-weight: 700;
+  color: #7c3aed;
   text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .dropdownItem {
-  padding: 5px 12px;
-  font-size: 11px;
-  color: #220033;
+  padding: 7px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #1e1b4b;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: all 0.15s ease;
 }
 
 .dropdownItem:hover {
-  background: #316ac5;
-  color: #ffffff;
+  background: #f5edfc;
+  color: #6d28d9;
 }
 
 .dropdownDivider {
   height: 1px;
-  background: #d4c8e3;
-  margin: 3px 0;
+  background: #ede6f8;
+  margin: 4px 0;
 }
 
 .messengerShell {
   display: grid;
-  grid-template-columns: 290px minmax(0, 1fr);
+  grid-template-columns: 300px minmax(0, 1fr);
   flex: 1;
   min-height: 0;
   overflow: hidden;
-  background: #ede7f6;
+  background: #ffffff;
 }
 
 /* Left Sidebar (Buddy List & Profile) */
 .sidebar {
-  display: grid;
-  grid-template-rows: auto auto minmax(0, 1fr) auto;
-  padding: 10px;
-  background: #f1ecf9;
-  border-right: 2px groove #ffffff;
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  background: #fbf9fe;
+  border-right: 1px solid #e8dff5;
+  gap: 8px;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .profile {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 6px 8px;
+  gap: 12px;
+  padding: 10px 12px;
   background: #ffffff;
-  border: 1px solid #7f9db9;
-  border-radius: 3px;
-  box-shadow: inset 1px 1px 2px rgba(0,0,0,0.08);
-  margin-bottom: 8px;
+  border: 1px solid #e8dff5;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(91, 30, 132, 0.05);
+  margin-bottom: 4px;
 }
 
 .avatar {
-  width: 40px;
-  height: 40px;
-  border: 1px solid #7f9db9;
-  box-shadow: inset 0 0 0 1px #ffffff, 0 1px 2px rgba(0,0,0,0.2);
+  width: 44px;
+  height: 44px;
+  border: none;
+  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.25);
   display: grid;
   place-items: center;
-  background: linear-gradient(135deg, #6c238f, #9b4bd1);
+  background: linear-gradient(135deg, #7c3aed 0%, #581c87 100%);
   color: #ffffff;
   font-size: 18px;
-  font-weight: bold;
-  border-radius: 3px;
+  font-weight: 800;
+  border-radius: 12px;
+  flex-shrink: 0;
 }
 
 .profileInfo {
@@ -382,61 +484,71 @@ button:disabled {
 .editStatusIconBtn {
   background: none;
   border: none;
-  padding: 2px 4px;
+  padding: 2px 6px;
   cursor: pointer;
-  border-radius: 2px;
-  color: #6c238f;
+  border-radius: 4px;
+  color: #7c3aed;
+  font-size: 12px;
+  transition: all 0.15s ease;
 }
 
 .editStatusIconBtn:hover {
-  background: #ede7f6;
+  background: #f5edfc;
 }
 
 .customStatusBubble {
   font-size: 11px;
-  color: #7a2ea8;
+  color: #7c3aed;
   font-style: italic;
+  font-weight: 500;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   cursor: pointer;
-  padding: 1px 2px;
-  border-radius: 2px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: #faf7fd;
+  border: 1px solid #ede6f8;
 }
 
 .customStatusBubble:hover {
-  background: #f1ecf9;
+  background: #f3e8ff;
+  border-color: #c4b0e5;
 }
 
 .customStatusPlaceholder {
-  font-size: 10px;
-  color: #887799;
+  font-size: 11px;
+  color: #94a3b8;
   cursor: pointer;
   font-style: italic;
 }
 
 .customStatusPlaceholder:hover {
-  color: #5b1e84;
+  color: #7c3aed;
 }
 
 .statusSelect {
-  padding: 2px 4px;
+  padding: 3px 6px;
   font-size: 11px;
-  border: 1px solid #7f9db9;
-  border-radius: 2px;
+  border: 1px solid #dcd1ed;
+  border-radius: 6px;
   background: #ffffff;
+  color: #1e1b4b;
+  outline: none;
+  cursor: pointer;
 }
 
 .profile strong {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 12px;
-  color: #2b0d42;
+  font-size: 13px;
+  font-weight: 700;
+  color: #1e1b4b;
 }
 
 .profile span {
-  color: #665577;
+  color: #64748b;
   font-size: 11px;
 }
 
@@ -446,43 +558,57 @@ button:disabled {
   height: 8px;
   margin-right: 4px;
   border-radius: 50%;
-  background: #28a745;
+  background: #22c55e;
 }
 
 .sectionTabs {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 2px;
+  gap: 6px;
   padding: 0 0 6px;
-  border-bottom: 1px solid #7f9db9;
-  margin-bottom: 6px;
+  border-bottom: none;
+  margin-bottom: 4px;
 }
 
 .sectionTabs button {
-  padding: 4px 8px;
-  background: #dcd0ec;
-  border: 1px solid #7f9db9;
-  border-bottom: none;
-  border-radius: 3px 3px 0 0;
-  font-size: 11px;
-  font-weight: bold;
-  color: #443355;
+  padding: 6px 12px;
+  background: #ffffff;
+  border: 1px solid #e2d6f4;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.sectionTabs button:hover {
+  background: #fbf9fe;
+  color: #4a156d;
 }
 
 .sectionTabs button.selected {
-  background: #ffffff;
-  border-bottom: 1px solid #ffffff;
-  color: #2b0d42;
+  background: #f5edfc;
+  border-color: #7c3aed;
+  color: #7c3aed;
+  font-weight: 700;
+  box-shadow: 0 1px 3px rgba(124, 58, 237, 0.12);
 }
 
 .sidebar nav {
   min-height: 0;
   overflow-y: auto;
   background: #ffffff;
-  border: 1px solid #7f9db9;
-  box-shadow: inset 1px 1px 2px rgba(0,0,0,0.15);
-  border-radius: 2px;
-  padding: 4px 0;
+  border: 1px solid #e8dff5;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+  border-radius: 10px;
+  padding: 6px;
 }
 
 .conversation {
@@ -490,135 +616,205 @@ button:disabled {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 4px 8px;
+  padding: 6px 10px;
   border: 0;
-  color: #110022;
+  border-radius: 8px;
+  color: #1e1b4b;
   text-align: left;
   background: transparent;
   cursor: pointer;
+  min-width: 0;
+  transition: all 0.15s ease;
+}
+
+.conversationMeta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.conversationTitle {
+  font-size: 12px;
+  font-weight: 600;
+  color: #1e1b4b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .conversation:hover,
 .conversation.active {
-  background: #316ac5;
-  color: #ffffff;
+  background: #f5edfc;
+  color: #6d28d9;
 }
 
+.conversation:hover .conversationTitle,
+.conversation.active .conversationTitle,
 .conversation:hover strong,
 .conversation.active strong {
-  color: #ffffff;
+  color: #6d28d9;
+  font-weight: 700;
 }
 
 .conversationHeading {
   display: flex;
   justify-content: space-between;
-  padding: 4px 8px;
-  font-size: 10px;
-  font-weight: bold;
-  color: #665577;
-  background: #f7f4fc;
+  padding: 6px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #7c3aed;
+  background: transparent;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
+.conversationsList,
 .contactsPanel {
+  flex: 1;
   min-height: 0;
   overflow-y: auto;
   background: #ffffff;
-  border: 1px solid #7f9db9;
-  box-shadow: inset 1px 1px 2px rgba(0,0,0,0.15);
-  border-radius: 2px;
-  padding: 6px 8px;
+  border: 1px solid #e8dff5;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+  border-radius: 10px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
 }
 
 .buddySearchContainer {
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 .buddySearchInput {
   width: 100%;
-  padding: 4px 6px;
-  border: 1px solid #7f9db9;
-  border-radius: 2px;
-  font-size: 11px;
-  box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.1);
+  padding: 6px 10px;
+  border: 1px solid #dcd1ed;
+  border-radius: 8px;
+  font-size: 12px;
+  background: #faf8fd;
+  color: #1e1b4b;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.buddySearchInput:focus {
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12);
+  background: #ffffff;
 }
 
 .categoryGroup {
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 .categoryHeader {
-  padding: 4px 6px;
-  background: linear-gradient(180deg, #ede7f6 0%, #dcd0ec 100%);
-  border: 1px solid #c8b9d8;
-  border-radius: 2px;
-  font-size: 11px;
-  font-weight: bold;
-  color: #3b1055;
+  padding: 6px 10px;
+  background: #f8f5fc;
+  border: 1px solid #ede6f8;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #4a156d;
   cursor: pointer;
   user-select: none;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  transition: all 0.15s ease;
 }
 
 .categoryHeader:hover {
-  background: #ede0f7;
+  background: #f3e8ff;
+  border-color: #c4b0e5;
+  color: #6d28d9;
 }
 
 .categoryItems {
   display: flex;
   flex-direction: column;
+  gap: 2px;
+  padding-top: 4px;
 }
 
 .emptyCategoryHint, .emptyListHint {
-  color: #887799;
+  color: #94a3b8;
   font-size: 11px;
   font-style: italic;
-  padding: 6px 8px;
+  padding: 6px 10px;
 }
 
 .addFriendForm {
   display: grid;
-  grid-template-columns: 1fr 28px;
-  gap: 4px;
-  margin-bottom: 8px;
+  grid-template-columns: 1fr 32px;
+  gap: 6px;
+  margin-bottom: 10px;
 }
 
 .addFriendInput {
-  padding: 4px 6px;
-  border: 1px solid #7f9db9;
-  border-radius: 2px;
-  font-size: 11px;
-  box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.1);
+  padding: 6px 10px;
+  border: 1px solid #dcd1ed;
+  border-radius: 8px;
+  font-size: 12px;
+  outline: none;
+  background: #faf8fd;
+  transition: all 0.2s ease;
+}
+
+.addFriendInput:focus {
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12);
+  background: #ffffff;
 }
 
 .addFriendBtn {
-  background: var(--btn-gradient);
-  border: 1px solid #7f9db9;
-  border-radius: 2px;
-  font-weight: bold;
-  font-size: 13px;
-  color: #3b1055;
+  background: linear-gradient(135deg, #7c3aed 0%, #581c87 100%);
+  border: none;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 14px;
+  color: #ffffff;
   cursor: pointer;
+  box-shadow: 0 2px 6px rgba(124, 58, 237, 0.25);
+  display: grid;
+  place-items: center;
+  transition: all 0.15s ease;
 }
 
 .addFriendBtn:hover {
-  background: var(--btn-hover);
-  border-color: #e5a700;
+  background: linear-gradient(135deg, #8b5cf6 0%, #6b21a8 100%);
+  transform: translateY(-1px);
 }
 
 .contactRow {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 6px;
-  border-bottom: 1px solid #f4f0fa;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 8px;
   cursor: pointer;
-  border-radius: 2px;
+  transition: all 0.15s ease;
 }
 
 .contactRow:hover {
-  background: #f3ecfb;
+  background: #f5edfc;
+}
+
+.contactRow:hover .contactName {
+  color: #6d28d9 !important;
+}
+
+.contactRow:hover .contactUsername {
+  color: #8b5cf6 !important;
+}
+
+.contactRow:hover .contactActionBtn {
+  background: #ffffff;
+  color: #7c3aed;
+  border-color: #c4b0e5;
 }
 
 .contactStatusDot {
@@ -635,17 +831,17 @@ button:disabled {
 }
 
 .contactName {
-  font-size: 11px;
-  font-weight: bold;
-  color: #2b0d42;
+  font-size: 12px;
+  font-weight: 700;
+  color: #1e1b4b;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .contactUsername {
-  font-size: 10px;
-  color: #776688;
+  font-size: 11px;
+  color: #64748b;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -654,35 +850,46 @@ button:disabled {
 .contactQuickActions {
   display: flex;
   align-items: center;
-  gap: 3px;
-  opacity: 0.4;
+  gap: 4px;
+  opacity: 0;
+  pointer-events: none;
+  margin-left: auto;
+  flex-shrink: 0;
   transition: opacity 0.15s ease;
 }
 
-.contactRow:hover .contactQuickActions {
+.contactRow:hover .contactQuickActions,
+.contactRow:focus-within .contactQuickActions {
   opacity: 1;
+  pointer-events: auto;
 }
 
 .contactActionBtn {
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
   display: grid;
   place-items: center;
-  background: var(--btn-gradient);
-  border: 1px solid #7f9db9;
-  border-radius: 2px;
+  background: #ffffff;
+  border: 1px solid #dcd1ed;
+  border-radius: 6px;
   padding: 0;
   cursor: pointer;
+  color: #581c87;
+  font-size: 11px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  transition: all 0.15s ease;
 }
 
 .contactActionBtn:hover {
-  background: var(--btn-hover);
-  border-color: #e5a700;
+  background: #7c3aed;
+  border-color: #7c3aed;
+  color: #ffffff;
+  transform: scale(1.08);
 }
 
 .contactActionBtn.danger:hover {
   background: #fee2e2;
-  border-color: #dc2626;
+  border-color: #ef4444;
   color: #dc2626;
 }
 
@@ -690,63 +897,95 @@ button:disabled {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 4px 6px;
-  border-bottom: 1px solid #f4f0fa;
-  font-size: 11px;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  font-size: 12px;
+  min-width: 0;
+  transition: all 0.15s ease;
+}
+
+.requestRow > span {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.requestRow:hover {
+  background: #f5edfc;
 }
 
 .requestActions {
   display: flex;
-  gap: 3px;
+  gap: 4px;
+  flex-shrink: 0;
 }
 
 .requestBtn {
-  padding: 2px 6px;
-  font-size: 10px;
-  font-weight: bold;
-  border: 1px solid #7f9db9;
-  border-radius: 2px;
-  background: var(--btn-gradient);
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid #dcd1ed;
+  border-radius: 6px;
+  background: #ffffff;
   cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
 }
 
 .requestBtn.accept {
   background: #dcfce7;
-  border-color: #16a34a;
+  border-color: #86efac;
   color: #15803d;
+}
+
+.requestBtn.accept:hover {
+  background: #bbf7d0;
 }
 
 .requestBtn.reject, .requestBtn.cancel {
   background: #fee2e2;
-  border-color: #dc2626;
+  border-color: #fca5a5;
   color: #b91c1c;
+}
+
+.requestBtn.reject:hover, .requestBtn.cancel:hover {
+  background: #fecaca;
 }
 
 /* Yahoo! Chat Tabbed Strip */
 .desktopChatTabsStrip {
   display: flex;
   align-items: flex-end;
-  gap: 3px;
-  padding: 4px 6px 0;
-  background: var(--window-bg);
-  border-bottom: 1px solid #7f9db9;
+  gap: 4px;
+  padding: 6px 12px 0;
+  background: #fbf9fe;
+  border-bottom: 1px solid #ede6f8;
   overflow-x: auto;
+  scrollbar-width: thin;
+  flex-wrap: nowrap;
   user-select: none;
+  flex-shrink: 0;
 }
 
 .desktopChatTab {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 4px 10px;
-  background: #dcd0ec;
-  border: 1px solid #7f9db9;
+  gap: 6px;
+  padding: 6px 14px;
+  background: #f3ecf9;
+  border: 1px solid #e8dff5;
   border-bottom: none;
-  border-radius: 4px 4px 0 0;
-  font-size: 11px;
-  color: #3b1055;
+  border-radius: 8px 8px 0 0;
+  font-size: 12px;
+  font-weight: 500;
+  color: #4a156d;
   cursor: pointer;
-  max-width: 160px;
+  max-width: 170px;
+  flex-shrink: 0;
   transition: all 0.15s ease;
 }
 
@@ -756,11 +995,11 @@ button:disabled {
 
 .desktopChatTab.active {
   background: #ffffff;
-  color: #1f082e;
-  font-weight: bold;
+  color: #1e1b4b;
+  font-weight: 700;
   border-bottom: 1px solid #ffffff;
   margin-bottom: -1px;
-  box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: inset 0 3px 0 var(--yahoo-yellow, #fed633), 0 -2px 6px rgba(0, 0, 0, 0.04);
 }
 
 .tabDot {
@@ -775,39 +1014,52 @@ button:disabled {
 }
 
 .tabCloseBtn {
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
   display: grid;
   place-items: center;
   border: none;
   background: transparent;
   border-radius: 50%;
-  font-size: 9px;
-  color: #887799;
+  font-size: 10px;
+  color: #94a3b8;
   cursor: pointer;
   padding: 0;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
 }
 
 .tabCloseBtn:hover {
-  background: #dc2626;
-  color: #ffffff;
+  background: #fee2e2;
+  color: #dc2626;
 }
 
 .sidebarFooter {
   display: flex;
   justify-content: space-between;
   gap: 6px;
-  padding: 6px 0 0;
-  border-top: 1px solid #d5c8e4;
+  padding: 8px 0 0;
+  border-top: 1px solid #ede6f8;
 }
 
 .sidebarFooter button {
-  padding: 4px 8px;
-  background: var(--btn-gradient);
-  border: 1px solid #7f9db9;
-  border-radius: 2px;
-  font-size: 10px;
-  font-weight: bold;
+  padding: 6px 12px;
+  background: #ffffff;
+  border: 1px solid #dcd1ed;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #4a156d;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+
+.sidebarFooter button:hover {
+  background: #f5edfc;
+  border-color: #c4b0e5;
+  color: #6d28d9;
 }
 
 /* ==========================================================================
@@ -816,19 +1068,24 @@ button:disabled {
 
 .chatPanel {
   min-width: 0;
-  display: grid;
-  grid-template-rows: 48px minmax(0, 1fr) auto 64px;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
   background: #ffffff;
+  overflow: hidden;
 }
 
 .chatHeader {
+  height: 56px;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 8px 14px;
-  background: linear-gradient(180deg, #faf7fe 0%, #ece5f7 100%);
-  border-bottom: 1px solid #7f9db9;
+  padding: 0 16px;
+  background: #ffffff;
+  border-bottom: 1px solid #ede6f8;
+  min-width: 0;
 }
 
 .chatHeaderLeft {
@@ -836,146 +1093,301 @@ button:disabled {
   align-items: center;
   gap: 10px;
   min-width: 0;
+  flex: 1;
 }
 
 .chatHeaderAvatar {
-  width: 32px;
-  height: 32px;
-  background: var(--yahoo-purple-gradient);
-  border: 1px solid #fed633;
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, #7c3aed 0%, #581c87 100%);
+  border: none;
   color: #ffffff;
-  border-radius: 4px;
+  border-radius: 10px;
   display: grid;
   place-items: center;
-  font-weight: bold;
+  font-weight: 700;
   font-size: 14px;
   flex-shrink: 0;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 6px rgba(124, 58, 237, 0.2);
 }
 
 .chatHeaderMeta {
   display: flex;
   flex-direction: column;
   min-width: 0;
+  flex: 1;
 }
 
 .chatHeader strong {
-  font-size: 13px;
-  color: #2b0d42;
+  font-size: 14px;
+  font-weight: 700;
+  color: #1e1b4b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.chatHeader span {
+  color: #7c3aed;
+  font-size: 11px;
+  font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.chatHeader span {
-  color: #665577;
-  font-size: 11px;
-}
-
 .headerActions {
   display: flex;
-  gap: 4px;
+  gap: 6px;
+  align-items: center;
+  flex-shrink: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  max-width: 60%;
 }
 
 .headerActions button {
-  padding: 4px 10px;
-  background: var(--btn-gradient);
-  border: 1px solid #7f9db9;
-  border-radius: 2px;
-  font-size: 11px;
-  font-weight: bold;
+  padding: 6px 12px;
+  background: #ffffff;
+  border: 1px solid #e2d6f4;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #4a156d;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  cursor: pointer;
+  flex-shrink: 0;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s ease;
+}
+
+.headerActions button:hover:not(:disabled) {
+  background: #f5edfc;
+  border-color: #c4b0e5;
+  color: #6d28d9;
+  transform: translateY(-1px);
 }
 
 .headerActions button:last-child {
-  background: var(--yahoo-yellow);
-  color: var(--yahoo-red);
-  border-color: #d4a000;
-  font-weight: 900;
+  background: linear-gradient(135deg, #ffe066 0%, #fed633 60%, #f59e0b 100%) !important;
+  color: #991b1b !important;
+  border: 1px solid #f59e0b !important;
+  font-weight: 800 !important;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3) !important;
+}
+
+.headerActions button:last-child:hover:not(:disabled) {
+  background: linear-gradient(135deg, #fff275 0%, #ffe066 100%) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4) !important;
 }
 
 /* History: Transcript Format */
 .history {
+  flex: 1;
   min-height: 0;
   overflow-y: auto;
-  padding: 12px 16px;
+  padding: 16px 20px;
   background: #ffffff;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: #1e293b;
+}
+
+/* Retro Conversation Start Banner */
+.retroTranscriptNotice {
+  align-self: center;
+  text-align: center;
+  font-size: 11px;
+  color: #6d5b7e;
+  padding: 6px 18px;
+  margin: 6px auto 12px;
+  background: #fbf9fe;
+  border: 1px dashed #dcd4e8;
+  border-radius: 20px;
+  font-family: var(--font-retro);
+  user-select: text;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+.retroTranscriptNotice strong {
+  color: var(--yahoo-purple, #5b1e84);
+  font-weight: 700;
 }
 
 .message {
   width: 100%;
   margin: 0 0 6px;
+  animation: fadeInMsg 0.15s ease-out;
 }
 
 .message p {
   margin: 0;
-  padding: 2px 0 2px 14px;
-  line-height: 1.4;
-  color: #111111;
-  font-size: 12px;
+  padding: 2px 0 2px 18px;
+  line-height: 1.55;
+  color: #1e293b;
+  font-size: 13px;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .message small {
   display: inline;
-  margin-left: 6px;
-  color: #888888;
-  font-size: 10px;
+  margin-left: 8px;
+  color: #94a3b8;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
 }
 
 .message.mine p {
-  color: var(--yahoo-blue);
-  font-weight: 500;
+  color: #2563eb;
+  font-weight: 600;
+}
+
+/* Rocket.Chat Modern Markdown & Code Block Support */
+.retroCodeBlock {
+  margin: 6px 0;
+  padding: 10px 14px;
+  background: #1e1b4b;
+  color: #e2e8f0;
+  border-radius: 8px;
+  border: 1px solid #4338ca;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  overflow-x: auto;
+  position: relative;
+}
+
+.retroCodeBlock .codeBlockHeader {
+  font-size: 10px;
+  font-weight: 700;
+  color: #a5b4fc;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid rgba(165, 180, 252, 0.2);
+}
+
+.inlineCode {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 12px;
+  background: rgba(91, 30, 132, 0.08);
+  border: 1px solid rgba(91, 30, 132, 0.18);
+  color: #6b21a8;
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+.retroQuote {
+  margin: 4px 0;
+  padding: 4px 10px;
+  border-left: 3px solid #7c3aed;
+  background: rgba(124, 58, 237, 0.04);
+  border-radius: 0 4px 4px 0;
+  color: #475569;
+  font-style: italic;
+}
+
+.retroMessageLink {
+  color: #2563eb;
+  text-decoration: underline;
+  word-break: break-all;
+}
+
+.retroMessageLink:hover {
+  color: #1d4ed8;
+}
+
+.deliveryCheck {
+  font-size: 11px;
+  color: #10b981;
+  font-weight: 700;
+  margin-left: 3px;
 }
 
 .emptyState {
-  color: #887799;
+  color: #94a3b8;
   text-align: center;
   margin-top: 15vh;
-  font-style: italic;
+  font-size: 13px;
+  font-weight: 500;
 }
 
 .chatError {
   margin: 0;
-  padding: 6px 14px;
-  color: #cc0000;
-  background: #fff0f0;
-  font-size: 11px;
+  padding: 8px 16px;
+  color: #b91c1c;
+  background: #fef2f2;
+  border-bottom: 1px solid #fecaca;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .composer {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  background: #f1ecf9;
-  border-top: 1px solid #7f9db9;
+  gap: 10px;
+  padding: 10px 14px;
+  background: #fdfbfe;
+  border-top: 1px solid #ede6f8;
 }
 
 .composer input {
   flex: 1;
   min-width: 0;
-  padding: 6px 8px;
-  border: 1px solid #7f9db9;
-  border-radius: 2px;
+  padding: 10px 14px;
+  border: 1px solid #dcd1ed;
+  border-radius: 8px;
   background: #ffffff;
-  box-shadow: inset 1px 1px 1px rgba(0,0,0,0.15);
-  font-size: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+  font-size: 13px;
+  color: #1e1b4b;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.composer input:focus {
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12);
 }
 
 .sendButton {
-  padding: 6px 16px;
-  background: var(--btn-gradient);
-  border: 1px solid #7f9db9;
-  border-radius: 2px;
-  font-weight: bold;
-  color: #110022;
+  min-width: 80px;
+  padding: 10px 22px;
+  background: linear-gradient(135deg, #7c3aed 0%, #581c87 100%);
+  border: none;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #ffffff;
+  cursor: pointer;
+  flex-shrink: 0;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+  transition: all 0.15s ease;
 }
 
 .sendButton:hover:not(:disabled) {
-  background: var(--btn-hover);
-  border-color: #e5a700;
+  background: linear-gradient(135deg, #8b5cf6 0%, #6b21a8 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(124, 58, 237, 0.4);
+}
+
+.sendButton:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(124, 58, 237, 0.3);
 }
 
 .transfer, .updater {
@@ -983,12 +1395,14 @@ button:disabled {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  margin: 4px 12px;
-  background: #eef2ff;
-  color: #4338ca;
-  padding: 4px 8px;
+  margin: 6px 14px;
+  background: #f5f3ff;
+  color: #6d28d9;
+  border: 1px solid #ddd6fe;
+  padding: 6px 12px;
   font-size: 11px;
-  border-radius: 3px;
+  font-weight: 600;
+  border-radius: 6px;
 }
 
 /* Desktop Yahoo BUZZ Banner & Shake */
@@ -999,15 +1413,22 @@ button:disabled {
 }
 
 .buzzBanner {
-  background: #fff0f0;
-  border: 1px solid #ff9999;
-  border-radius: 4px;
-  color: #cc0000;
+  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+  border: 1px solid #fca5a5;
+  border-radius: 10px;
+  color: #b91c1c;
   font-weight: 800;
-  font-size: 11px;
-  padding: 6px 10px;
+  font-size: 12px;
+  padding: 8px 14px;
   text-align: center;
-  box-shadow: 0 1px 3px rgba(204, 0, 0, 0.15);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
+  animation: desktopBuzzPulse 1.2s infinite ease-in-out;
+}
+
+@keyframes desktopBuzzPulse {
+  0% { transform: scale(1); box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15); }
+  50% { transform: scale(1.01); box-shadow: 0 6px 20px rgba(239, 68, 68, 0.25); }
+  100% { transform: scale(1); box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15); }
 }
 
 @keyframes desktopBuzzShake {
@@ -1038,19 +1459,19 @@ button:disabled {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(15, 5, 25, 0.72);
-  backdrop-filter: blur(2px);
+  background: rgba(15, 5, 25, 0.6);
+  backdrop-filter: blur(4px);
   display: grid;
   place-items: center;
   z-index: 99999;
 }
 
 .retroCallWindow {
-  background: #f4ecf8;
-  border: 2px solid #5b1e84;
-  border-radius: 4px;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6), inset 1px 1px 0 #ffffff;
-  width: 480px;
+  background: #ffffff;
+  border: 1px solid #dcd1ed;
+  border-radius: 14px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(124, 58, 237, 0.15);
+  width: 500px;
   max-width: 95vw;
   overflow: hidden;
   font-family: var(--font-retro);
@@ -1059,9 +1480,10 @@ button:disabled {
 .callWindowTitleBar {
   background: linear-gradient(90deg, #5b1e84 0%, #7d2ba6 50%, #5b1e84 100%);
   color: #ffffff;
-  font-size: 11px;
-  font-weight: bold;
-  padding: 4px 8px;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 0 12px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1072,40 +1494,45 @@ button:disabled {
 .callWindowTitleLeft {
   display: flex;
   align-items: center;
+  gap: 8px;
 }
 
 .callWindowControls {
   display: flex;
-  gap: 3px;
+  gap: 4px;
 }
 
 .callWindowBtn {
-  width: 16px;
-  height: 14px;
-  border: 1px solid #ffffff;
-  background: #e8daf0;
-  color: #2b0d42;
-  font-size: 9px;
-  line-height: 12px;
-  font-weight: bold;
+  width: 22px;
+  height: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 700;
   padding: 0;
   display: grid;
   place-items: center;
   cursor: pointer;
-  border-radius: 2px;
+  border-radius: 6px;
+  transition: all 0.15s ease;
 }
 
 .callWindowBtn:hover {
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.callWindowBtn.closeBtn:hover {
+  background: #ef4444;
 }
 
 .callWindowInfoStrip {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 6px 12px;
-  background: #ede0f5;
-  border-bottom: 1px solid #caaed9;
+  padding: 8px 16px;
+  background: #faf7fd;
+  border-bottom: 1px solid #ede6f8;
 }
 
 .callPartnerDetails {
@@ -1114,26 +1541,27 @@ button:disabled {
 }
 
 .callPartnerName {
-  font-weight: bold;
-  font-size: 13px;
-  color: #3b1055;
+  font-weight: 700;
+  font-size: 14px;
+  color: #1e1b4b;
 }
 
 .callDuration {
-  font-size: 11px;
-  color: #6a4484;
+  font-size: 12px;
+  color: #7c3aed;
+  font-weight: 500;
 }
 
 .callStatusBadge {
-  font-size: 10px;
-  font-weight: bold;
-  padding: 2px 8px;
-  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 12px;
 }
 
 .callStatusBadge.connected {
-  background: #14532d;
-  color: #4ade80;
+  background: #dcfce7;
+  color: #15803d;
 }
 
 /* Call Media Viewport */
@@ -1173,33 +1601,34 @@ button:disabled {
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  font-size: 11px;
+  font-size: 12px;
+  font-weight: 500;
 }
 
 .videoSuperBadge {
   position: absolute;
-  top: 8px;
-  left: 8px;
-  background: rgba(64, 0, 128, 0.85);
-  color: #ffd700;
-  font-size: 9px;
-  font-weight: bold;
-  padding: 2px 7px;
-  border: 1px solid #ffd700;
-  border-radius: 2px;
+  top: 10px;
+  left: 10px;
+  background: rgba(91, 30, 132, 0.85);
+  color: #fed633;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border: 1px solid #fed633;
+  border-radius: 6px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
 }
 
 .localVideoPip {
   position: absolute;
-  bottom: 10px;
-  right: 10px;
-  width: 110px;
-  height: 82px;
+  bottom: 12px;
+  right: 12px;
+  width: 120px;
+  height: 90px;
   background: #000000;
-  border: 2px solid #ffd700;
-  border-radius: 2px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+  border: 2px solid #fed633;
+  border-radius: 8px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
   overflow: hidden;
   z-index: 10;
 }
@@ -1217,7 +1646,7 @@ button:disabled {
   height: 100%;
   background: #2a1538;
   color: #ccaadd;
-  font-size: 10px;
+  font-size: 11px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1227,34 +1656,34 @@ button:disabled {
 
 .pipLabel {
   position: absolute;
-  bottom: 2px;
-  left: 4px;
+  bottom: 4px;
+  left: 6px;
   background: rgba(0, 0, 0, 0.7);
   color: #ffffff;
-  font-size: 8px;
-  padding: 1px 4px;
-  border-radius: 2px;
+  font-size: 9px;
+  padding: 1px 6px;
+  border-radius: 4px;
 }
 
 /* Voice Chat Viewport */
 .voiceChatViewport {
-  padding: 24px 16px;
+  padding: 28px 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  background: linear-gradient(180deg, #f7f0fb 0%, #e6d4f0 100%);
+  background: linear-gradient(180deg, #fbf9fe 0%, #ede3f5 100%);
 }
 
 .voiceAvatarPulse {
-  width: 64px;
-  height: 64px;
+  width: 68px;
+  height: 68px;
   border-radius: 50%;
   background: #eedef7;
   border: 2px solid #7d2ba6;
   display: grid;
   place-items: center;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
   animation: pulseCallRing 1.6s infinite;
 }
 
@@ -1265,14 +1694,14 @@ button:disabled {
 }
 
 .voiceChatSubtext {
-  font-size: 11px;
+  font-size: 12px;
   color: #6a4484;
-  margin: 4px 0 12px;
+  margin: 4px 0 14px;
 }
 
 .voiceVuRow {
   display: flex;
-  gap: 16px;
+  gap: 20px;
   justify-content: center;
 }
 
@@ -1284,8 +1713,8 @@ button:disabled {
 }
 
 .retroVuLabel {
-  font-size: 9px;
-  font-weight: bold;
+  font-size: 10px;
+  font-weight: 700;
   color: #553366;
   width: 28px;
   text-align: right;
@@ -1295,14 +1724,14 @@ button:disabled {
   display: flex;
   gap: 2px;
   background: #11051c;
-  padding: 2px 3px;
-  border-radius: 2px;
+  padding: 3px 4px;
+  border-radius: 4px;
   border: 1px solid #4a2266;
 }
 
 .retroVuSeg {
   width: 5px;
-  height: 10px;
+  height: 12px;
   border-radius: 1px;
   opacity: 0.18;
   transition: opacity 0.06s ease;
@@ -1333,28 +1762,28 @@ button:disabled {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 6px 12px;
-  background: #ede0f5;
-  border-top: 1px solid #caaed9;
-  font-size: 11px;
+  padding: 8px 16px;
+  background: #faf7fd;
+  border-top: 1px solid #ede6f8;
+  font-size: 12px;
 }
 
 .audioVolumeControl {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   color: #3b1055;
 }
 
 .audioVolumeControl input[type="range"] {
-  width: 70px;
+  width: 75px;
   height: 4px;
   accent-color: #5b1e84;
 }
 
 .miniVuMeters {
   display: flex;
-  gap: 12px;
+  gap: 14px;
 }
 
 /* Action Bar */
@@ -1362,74 +1791,84 @@ button:disabled {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 10px 14px;
-  background: #e2cfee;
-  border-top: 1px solid #caaed9;
+  padding: 12px 16px;
+  background: #ffffff;
+  border-top: 1px solid #ede6f8;
+  border-radius: 0 0 14px 14px;
 }
 
 .incomingActionRow,
 .activeActionRow {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   align-items: center;
 }
 
 .retroCallBtn {
-  border-radius: 3px;
-  padding: 6px 16px;
-  font-size: 11px;
-  font-weight: bold;
+  border-radius: 8px;
+  padding: 8px 20px;
+  font-size: 12px;
+  font-weight: 700;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.3), 0 2px 4px rgba(0, 0, 0, 0.15);
+  transition: all 0.15s ease;
+  border: none;
 }
 
 .acceptBtn {
-  background: linear-gradient(180deg, #38b44a 0%, #228b22 100%);
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
   color: #ffffff;
-  border: 1px solid #1c6b1c;
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
 }
 
 .acceptBtn:hover {
-  background: linear-gradient(180deg, #44cc58 0%, #2a9e2a 100%);
+  background: linear-gradient(135deg, #4ade80 0%, #15803d 100%);
+  transform: translateY(-1px);
 }
 
 .declineBtn,
 .hangupBtn {
-  background: linear-gradient(180deg, #e04b4b 0%, #c92828 100%);
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
   color: #ffffff;
-  border: 1px solid #991c1c;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
 }
 
 .declineBtn:hover,
 .hangupBtn:hover {
-  background: linear-gradient(180deg, #f05a5a 0%, #dd3333 100%);
+  background: linear-gradient(135deg, #f87171 0%, #b91c1c 100%);
+  transform: translateY(-1px);
 }
 
 .retroCallToolBtn {
-  background: linear-gradient(180deg, #ffffff 0%, #ede9d8 100%);
-  border: 1px solid #8e62a6;
-  border-radius: 3px;
-  font-size: 11px;
-  font-weight: bold;
-  color: #3b1055;
-  padding: 5px 10px;
+  background: #ffffff;
+  border: 1px solid #e2d6f4;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #4a156d;
+  padding: 8px 14px;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
+  flex-shrink: 0;
+  white-space: nowrap;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: all 0.15s ease;
 }
 
 .retroCallToolBtn:hover {
-  background: linear-gradient(180deg, #ffffff 0%, #fff2ba 100%);
+  background: #f5edfc;
+  border-color: #c4b0e5;
+  color: #6d28d9;
 }
 
 .retroCallToolBtn.muted {
-  background: #fadede;
-  border-color: #cb5353;
-  color: #901010;
+  background: #fee2e2;
+  border-color: #fca5a5;
+  color: #b91c1c;
 }
 
 /* ==========================================================================
@@ -1439,121 +1878,243 @@ button:disabled {
 .composerWrapper {
   display: flex;
   flex-direction: column;
-  background: #f1ecf9;
-  border-top: 1px solid #7f9db9;
+  background: #ffffff;
+  border-top: 1px solid #ede6f8;
   position: relative;
+  flex-shrink: 0;
 }
 
 .formatToolbar {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px 8px;
-  background: linear-gradient(180deg, #ede7f6 0%, #e1d6ee 100%);
-  border-bottom: 1px solid #d4c8e3;
+  gap: 6px;
+  padding: 4px 12px;
+  background: #ffffff;
+  border-bottom: 1px solid #ede6f8;
   user-select: none;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  min-height: 36px;
 }
 
 .fontSelect,
 .fontSizeSelect {
-  padding: 2px 4px;
-  border: 1px solid #7f9db9;
-  border-radius: 2px;
+  padding: 4px 8px;
+  border: 1px solid #dcd1ed;
+  border-radius: 6px;
   background: #ffffff;
-  font-size: 11px;
-  height: 22px;
+  font-size: 12px;
+  height: 28px;
+  color: #1e1b4b;
+  outline: none;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.fontSelect:focus,
+.fontSizeSelect:focus {
+  border-color: #7c3aed;
 }
 
 .formatBtn {
-  width: 24px;
-  height: 22px;
+  width: 28px;
+  height: 28px;
   padding: 0;
-  border: 1px solid #7f9db9;
-  border-radius: 2px;
-  background: var(--btn-gradient);
+  border: 1px solid #e2d6f4;
+  border-radius: 6px;
+  background: #ffffff;
   cursor: pointer;
   display: inline-grid;
   place-items: center;
-  font-size: 11px;
-  color: #220033;
+  font-size: 12px;
+  font-weight: 700;
+  color: #4a156d;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
 }
 
 .formatBtn:hover:not(:disabled) {
-  background: var(--btn-hover);
-  border-color: #e5a700;
+  background: #f5edfc;
+  border-color: #c4b0e5;
+  color: #6d28d9;
 }
 
 .formatBtn.active {
-  background: linear-gradient(180deg, #ffd700 0%, #ffae00 100%);
-  border-color: #c48200;
-  box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.2);
+  background: #ede6f8;
+  border-color: #7c3aed;
+  color: #6d28d9;
 }
 
 .colorIndicator {
   display: inline-block;
   width: 12px;
-  height: 3px;
-  margin-top: 1px;
-  border-radius: 1px;
+  height: 4px;
+  margin-top: 2px;
+  border-radius: 2px;
 }
 
 .toolbarDivider {
   width: 1px;
-  height: 18px;
-  background: #c5b5d8;
-  margin: 0 3px;
+  height: 20px;
+  background: #ede6f8;
+  margin: 0 4px;
+  flex-shrink: 0;
 }
 
 .buzzActionBtn {
-  background: linear-gradient(180deg, #ffe600 0%, #ffc400 100%);
-  border: 1px solid #c48200;
-  color: #cc0000;
-  font-weight: 900;
-  font-size: 11px;
-  padding: 2px 8px;
-  border-radius: 3px;
+  background: linear-gradient(135deg, #ffe066 0%, #fed633 60%, #f59e0b 100%);
+  border: 1px solid #f59e0b;
+  color: #991b1b;
+  font-weight: 800;
+  font-size: 12px;
+  padding: 4px 12px;
+  border-radius: 6px;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   cursor: pointer;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+  flex-shrink: 0;
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(245, 158, 11, 0.3);
+  transition: all 0.15s ease;
 }
 
 .buzzActionBtn:hover:not(:disabled) {
-  filter: brightness(1.1);
-  transform: scale(1.02);
+  background: linear-gradient(135deg, #fff275 0%, #ffe066 100%);
+  transform: translateY(-1px);
 }
 
-.buzzActionBtn:active:not(:disabled) {
-  transform: scale(0.98);
+/* Facebook Messenger-style Typing Bubble & Delivery Status for Desktop */
+.msgStatusSent {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  margin-right: 4px;
+}
+
+.sentCheckCircle {
+  display: inline-grid;
+  place-items: center;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #94a3b8;
+  color: #ffffff;
+  font-size: 8px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.fbTypingContainer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  margin: 6px 0;
+  animation: fadeInMsg 0.2s ease-out;
+}
+
+.fbTypingAvatar {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%);
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 800;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  flex-shrink: 0;
+}
+
+.fbTypingBubble {
+  display: inline-flex;
+  align-items: center;
+  background: #f3e8ff;
+  border: 1px solid #e9d5ff;
+  border-radius: 14px;
+  padding: 6px 10px;
+  min-height: 24px;
+  box-shadow: 0 1px 3px rgba(124, 58, 237, 0.08);
+}
+
+.fbTypingDots {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.fbDot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #7c3aed;
+  display: inline-block;
+  animation: fbBounce 1.4s infinite ease-in-out both;
+}
+
+.fbDot.dot1 {
+  animation-delay: -0.32s;
+}
+
+.fbDot.dot2 {
+  animation-delay: -0.16s;
+}
+
+.fbDot.dot3 {
+  animation-delay: 0s;
+}
+
+@keyframes fbBounce {
+  0%, 80%, 100% {
+    transform: scale(0.6);
+    opacity: 0.4;
+  }
+  40% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+}
+
+.fbTypingText {
+  font-size: 11px;
+  color: #7c3aed;
+  font-style: italic;
+  font-weight: 500;
 }
 
 .composerArea {
   display: flex;
   align-items: flex-end;
-  gap: 8px;
-  padding: 6px 10px 8px;
-  background: #ffffff;
+  gap: 10px;
+  padding: 10px 14px 12px;
+  background: #fdfbfe;
 }
 
 .composerInput {
   flex: 1;
+  min-width: 0;
   min-height: 54px;
   max-height: 120px;
-  padding: 6px 8px;
-  border: 1px solid #7f9db9;
-  border-radius: 2px;
+  padding: 10px 14px;
+  border: 1px solid #dcd1ed;
+  border-radius: 10px;
   background: #ffffff;
-  box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
   font-family: inherit;
   font-size: 13px;
-  resize: vertical;
-  line-height: 1.4;
+  resize: none;
+  overflow-y: auto;
+  line-height: 1.5;
   outline: none;
+  transition: all 0.2s ease;
 }
 
 .composerInput:focus {
-  border-color: #5b1e84;
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12);
 }
 
 /* ==========================================================================
@@ -1563,27 +2124,34 @@ button:disabled {
 .retroPickerBackdrop {
   position: fixed;
   inset: 0;
-  background: transparent;
-  z-index: 100;
+  background: rgba(15, 5, 25, 0.25);
+  backdrop-filter: blur(2px);
+  z-index: 1000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-start;
+  padding-bottom: 105px;
+  padding-left: min(316px, 30vw);
+  animation: fadeInMsg 0.15s ease-out;
 }
 
 .retroEmoticonPicker,
 .retroColorPicker,
 .retroAudiblePicker,
 .retroImvPicker {
-  position: absolute;
-  bottom: 90px;
-  left: 20px;
-  background: #f7f4fc;
-  border: 2px solid #5b1e84;
-  border-radius: 4px;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
-  z-index: 101;
+  position: static !important;
+  background: #ffffff;
+  border: 1px solid #dcd1ed;
+  border-radius: 12px;
+  box-shadow: 0 16px 40px rgba(42, 8, 69, 0.35), 0 2px 6px rgba(0, 0, 0, 0.05);
+  z-index: 1001;
   overflow: hidden;
+  max-height: calc(100vh - 150px);
+  max-width: min(380px, calc(100vw - 40px));
 }
 
 .retroEmoticonPicker {
-  width: 330px;
+  width: 350px;
 }
 
 .retroColorPicker {
@@ -1591,107 +2159,114 @@ button:disabled {
 }
 
 .retroAudiblePicker {
-  width: 260px;
+  width: 280px;
 }
 
 .retroImvPicker {
-  width: 320px;
+  width: 340px;
 }
 
 .pickerHeader {
-  height: 24px;
-  background: var(--yahoo-purple-gradient);
+  height: 32px;
+  background: linear-gradient(90deg, #5b1e84 0%, #7d2ba6 50%, #5b1e84 100%);
   color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 8px;
-  font-size: 11px;
-  font-weight: bold;
+  padding: 0 12px;
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .emoticonGrid {
   display: grid;
   grid-template-columns: repeat(8, 1fr);
-  gap: 4px;
-  padding: 8px;
+  gap: 6px;
+  padding: 10px;
   background: #ffffff;
-  max-height: 200px;
+  max-height: 220px;
   overflow-y: auto;
 }
 
 .emoticonCell {
-  width: 32px;
-  height: 32px;
+  width: 34px;
+  height: 34px;
   display: grid;
   place-items: center;
   border: 1px solid transparent;
   background: transparent;
-  border-radius: 3px;
+  border-radius: 6px;
   cursor: pointer;
   padding: 0;
+  transition: all 0.15s ease;
 }
 
 .emoticonCell:hover {
-  background: #eedefc;
-  border-color: #9b4bd1;
+  background: #fef3c7;
+  border-color: #fed633;
+  transform: scale(1.15);
 }
 
 .colorGrid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 6px;
-  padding: 10px;
+  padding: 12px;
   background: #ffffff;
 }
 
 .colorSwatch {
-  width: 36px;
-  height: 24px;
-  border: 1px solid #7f9db9;
-  border-radius: 2px;
+  width: 38px;
+  height: 26px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 6px;
   cursor: pointer;
+  transition: transform 0.15s ease;
 }
 
 .colorSwatch:hover {
-  outline: 2px solid #5b1e84;
+  transform: scale(1.15);
+  outline: 2px solid #fed633;
 }
 
 .colorSwatch.selected {
-  outline: 2px solid #ffd700;
-  box-shadow: 0 0 4px rgba(0, 0, 0, 0.4);
+  outline: 2px solid #7c3aed;
+  box-shadow: 0 0 6px rgba(124, 58, 237, 0.4);
 }
 
 .audibleList {
   display: flex;
   flex-direction: column;
-  padding: 6px;
+  padding: 8px;
   background: #ffffff;
-  gap: 4px;
+  gap: 6px;
 }
 
 .audibleItem {
-  padding: 6px 10px;
-  font-size: 11px;
+  padding: 8px 12px;
+  font-size: 12px;
   text-align: left;
-  border: 1px solid #ede7f6;
-  background: #fbf9fe;
-  border-radius: 3px;
+  border: 1px solid #ede6f8;
+  background: #ffffff;
+  border-radius: 8px;
   cursor: pointer;
   font-weight: 500;
-  color: #3b1055;
+  color: #1e1b4b;
+  transition: all 0.15s ease;
 }
 
 .audibleItem:hover {
-  background: #ede0f7;
-  border-color: #8e62a6;
+  background: #f5edfc;
+  border-color: #c4b0e5;
+  color: #6d28d9;
+  transform: translateX(2px);
 }
 
 .imvGrid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
-  padding: 8px;
+  gap: 10px;
+  padding: 10px;
   background: #ffffff;
   max-height: 240px;
   overflow-y: auto;
@@ -1701,42 +2276,41 @@ button:disabled {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 6px;
-  background: #fbf9fe;
-  border: 1px solid #dcd0ec;
-  border-radius: 4px;
+  padding: 8px;
+  background: #ffffff;
+  border: 1px solid #ede6f8;
+  border-radius: 8px;
   cursor: pointer;
   transition: all 0.15s ease;
   text-align: center;
 }
 
 .imvCard:hover {
-  background: #ede0f7;
-  border-color: #7a2ea8;
-  transform: translateY(-1px);
+  background: #f5edfc;
+  border-color: #c4b0e5;
+  transform: translateY(-2px);
 }
 
 .imvCard.active {
-  border: 2px solid #5b1e84;
-  background: #eedefc;
-  box-shadow: 0 0 6px rgba(91, 30, 132, 0.3);
+  border: 2px solid #7c3aed;
+  background: #ede6f8;
 }
 
 .imvPreview {
   width: 100%;
-  height: 48px;
-  border-radius: 3px;
-  border: 1px solid rgba(0, 0, 0, 0.15);
+  height: 52px;
+  border-radius: 6px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
   display: grid;
   place-items: center;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
   overflow: hidden;
 }
 
 .imvTitle {
-  font-size: 11px;
-  font-weight: 500;
-  color: #3b1055;
+  font-size: 12px;
+  font-weight: 600;
+  color: #1e1b4b;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1750,64 +2324,75 @@ button:disabled {
 .retroModalBackdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
+  background: rgba(15, 5, 25, 0.6);
+  backdrop-filter: blur(4px);
   display: grid;
   place-items: center;
   z-index: 1000;
 }
 
 .retroModalDialog {
-  width: 440px;
+  width: 460px;
   max-width: 90vw;
-  background: #f7f4fc;
-  border: 2px solid #5b1e84;
-  border-radius: 4px;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border: 1px solid #dcd1ed;
+  border-radius: 14px;
+  box-shadow: 0 20px 50px rgba(20, 5, 35, 0.4), 0 0 0 1px rgba(124, 58, 237, 0.15);
   overflow: hidden;
 }
 
 .retroModalHeader {
-  height: 28px;
-  background: var(--yahoo-purple-gradient);
+  height: 36px;
+  background: linear-gradient(90deg, #5b1e84 0%, #7d2ba6 50%, #5b1e84 100%);
   color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 8px;
+  padding: 0 12px;
   font-size: 12px;
-  font-weight: bold;
+  font-weight: 700;
+  flex-shrink: 0;
 }
 
 .retroModalTitle {
   display: flex;
   align-items: center;
+  gap: 8px;
 }
 
 .retroModalBody {
-  padding: 14px 16px;
+  padding: 18px 20px;
   background: #ffffff;
+  overflow-y: auto;
+  flex: 1;
 }
 
 .retroFieldLabel {
   display: block;
-  font-size: 11px;
-  font-weight: bold;
-  color: #3b1055;
+  font-size: 12px;
+  font-weight: 700;
+  color: #3b0764;
   margin-bottom: 6px;
 }
 
 .retroInput {
   width: 100%;
-  padding: 6px 8px;
-  border: 1px solid #7f9db9;
-  border-radius: 2px;
-  font-size: 12px;
+  padding: 8px 12px;
+  border: 1px solid #dcd1ed;
+  border-radius: 8px;
+  font-size: 13px;
   margin-bottom: 12px;
   outline: none;
+  background: #ffffff;
+  transition: all 0.2s ease;
 }
 
 .retroInput:focus {
-  border-color: #5b1e84;
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12);
 }
 
 .presetSection {
@@ -1815,74 +2400,95 @@ button:disabled {
 }
 
 .presetHeader {
-  font-size: 10px;
-  color: #665577;
-  font-weight: bold;
+  font-size: 11px;
+  color: #7c3aed;
+  font-weight: 700;
   text-transform: uppercase;
-  margin-bottom: 6px;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
 }
 
 .presetList {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
   max-height: 140px;
   overflow-y: auto;
 }
 
 .presetItem {
-  padding: 4px 8px;
-  font-size: 11px;
+  padding: 6px 10px;
+  font-size: 12px;
   text-align: left;
-  border: 1px solid #eee;
+  border: 1px solid #ede6f8;
   background: #fbf9fe;
-  border-radius: 2px;
+  border-radius: 6px;
   cursor: pointer;
-  color: #2b0d42;
+  color: #1e1b4b;
+  transition: all 0.15s ease;
 }
 
 .presetItem:hover {
-  background: #ede0f7;
-  border-color: #9b4bd1;
+  background: #f5edfc;
+  border-color: #c4b0e5;
+  color: #6d28d9;
 }
 
 .retroModalActions {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-top: 14px;
-  padding-top: 10px;
-  border-top: 1px solid #ede7f6;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #ede6f8;
+  flex-shrink: 0;
+  flex-wrap: wrap;
 }
 
 .retroBtn {
-  padding: 5px 14px;
-  font-size: 11px;
-  font-weight: bold;
-  border-radius: 2px;
-  border: 1px solid #7f9db9;
-  background: var(--btn-gradient);
+  padding: 8px 18px;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 8px;
+  border: 1px solid #dcd1ed;
+  background: #ffffff;
   cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+  color: #4a156d;
+  transition: all 0.15s ease;
 }
 
 .retroBtn:hover:not(:disabled) {
-  background: var(--btn-hover);
-  border-color: #e5a700;
+  background: #f5edfc;
+  border-color: #c4b0e5;
+  color: #6d28d9;
 }
 
 .retroBtn.primary {
-  background: linear-gradient(180deg, #6c238f 0%, #471261 100%);
+  background: linear-gradient(135deg, #7c3aed 0%, #581c87 100%);
   color: #ffffff;
-  border-color: #3b0952;
+  border: none;
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
 }
 
 .retroBtn.primary:hover:not(:disabled) {
-  background: linear-gradient(180deg, #7e2ba6 0%, #561674 100%);
+  background: linear-gradient(135deg, #8b5cf6 0%, #6b21a8 100%);
+  transform: translateY(-1px);
 }
 
 .retroBtn.danger {
-  color: #cc0000;
-  border-color: #e5a0a0;
+  color: #ef4444;
+  border-color: #fca5a5;
+  background: #ffffff;
+}
+
+.retroBtn.danger:hover:not(:disabled) {
+  background: #fee2e2;
+  border-color: #ef4444;
 }
 
 .aboutBox {
@@ -1892,38 +2498,43 @@ button:disabled {
 .aboutBrandStrip {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 14px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #ede7f6;
+  gap: 16px;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #ede6f8;
 }
 
 .aboutBigIcon {
-  width: 52px;
-  height: 52px;
+  width: 60px;
+  height: 60px;
   display: grid;
   place-items: center;
-  background: #fed633;
-  border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  background: var(--yahoo-yellow, #fed633);
+  border-radius: 14px;
+  font-weight: 900;
+  font-size: 32px;
+  color: #471a68;
+  box-shadow: 0 4px 14px rgba(254, 214, 51, 0.4);
 }
 
 .aboutHeading {
   margin: 0;
-  font-size: 18px;
-  color: #3a1154;
+  font-size: 20px;
+  color: #1e1b4b;
+  font-weight: 800;
 }
 
 .aboutVersion {
   font-size: 12px;
-  color: #7a2ea8;
-  font-weight: bold;
+  color: #7c3aed;
+  font-weight: 700;
+  margin: 2px 0;
 }
 
 .aboutText {
-  font-size: 11px;
-  color: #333333;
-  line-height: 1.5;
+  font-size: 12px;
+  color: #334155;
+  line-height: 1.6;
 }
 
 .aboutText ul {
@@ -1936,9 +2547,9 @@ button:disabled {
 }
 
 .copyright {
-  font-size: 10px;
-  color: #777777;
-  margin-top: 12px;
+  font-size: 11px;
+  color: #94a3b8;
+  margin-top: 14px;
   font-style: italic;
 }
 
@@ -1947,35 +2558,37 @@ button:disabled {
    ========================================================================== */
 
 .message .senderLabel {
-  font-weight: bold;
-  font-size: 12px;
-  margin-right: 4px;
+  font-weight: 700;
+  font-size: 13px;
+  margin-right: 6px;
 }
 
 .message.mine .senderLabel {
-  color: #0000cc;
+  color: #2563eb;
 }
 
 .message.peer .senderLabel {
-  color: #cc0000;
+  color: #7c3aed;
 }
 
 .audibleBadge {
-  background: #fff7ed;
-  border: 1px solid #fdba74;
-  color: #9a3412;
-  padding: 3px 8px;
-  border-radius: 4px;
-  font-weight: bold;
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+  border: 1px solid #fde68a;
+  color: #b45309;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-weight: 700;
   font-size: 11px;
   display: inline-flex;
   align-items: center;
+  box-shadow: 0 1px 3px rgba(245, 158, 11, 0.1);
 }
 
 .messageSeq {
-  margin-left: 6px;
-  font-size: 10px;
-  color: #888888;
+  margin-left: 8px;
+  font-size: 11px;
+  color: #94a3b8;
+  font-variant-numeric: tabular-nums;
 }
 
 /* ==========================================================================
@@ -1987,12 +2600,12 @@ button:disabled {
 }
 
 .skinContent {
-  padding: 12px 16px;
+  padding: 14px 18px;
 }
 
 .skinGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(180px, 100%), 1fr));
   gap: 10px;
   max-height: 320px;
   overflow-y: auto;
@@ -2002,55 +2615,56 @@ button:disabled {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  padding: 8px;
+  padding: 10px;
   background: #ffffff;
-  border: 2px solid #dcd0ec;
-  border-radius: 4px;
+  border: 1.5px solid #ede6f8;
+  border-radius: 10px;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.2s ease;
   text-align: left;
 }
 
 .skinCard:hover {
-  border-color: #7a2ea8;
-  box-shadow: 0 2px 8px rgba(108, 35, 143, 0.2);
+  border-color: #a855f7;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.15);
 }
 
 .skinCard.selected {
-  border-color: #5b1e84;
+  border-color: #7c3aed;
   background: #fdfafd;
-  box-shadow: 0 0 0 2px #fed633, 0 3px 10px rgba(91, 30, 132, 0.35);
+  box-shadow: 0 0 0 2px #fed633, 0 4px 14px rgba(91, 30, 132, 0.2);
 }
 
 .skinBarPreview {
-  height: 22px;
-  border-radius: 2px 2px 0 0;
+  height: 24px;
+  border-radius: 6px 6px 0 0;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
 .skinBodyPreview {
-  height: 28px;
-  border-radius: 0 0 2px 2px;
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  height: 30px;
+  border-radius: 0 0 6px 6px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
   border-top: none;
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  padding: 0 6px;
+  padding: 0 8px;
 }
 
 .skinAccentDot {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  border: 1px solid rgba(0, 0, 0, 0.25);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
 }
 
 .skinName {
-  font-size: 11px;
-  font-weight: bold;
-  color: #2b0d42;
+  font-size: 12px;
+  font-weight: 700;
+  color: #1e1b4b;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -2058,18 +2672,18 @@ button:disabled {
 
 .skinIndicator {
   font-size: 10px;
-  color: #28a745;
-  font-weight: bold;
+  color: #16a34a;
+  font-weight: 700;
 }
 
 /* Yahoo! Games — Cờ Caro */
 
 .caroBox {
-  width: 360px;
+  width: 380px;
 }
 
 .caroContent {
-  padding: 12px 16px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -2077,53 +2691,56 @@ button:disabled {
 
 .caroStatusStrip {
   width: 100%;
-  padding: 6px 10px;
-  background: #ede7f6;
-  border: 1px solid #dcd0ec;
-  border-radius: 3px;
-  font-size: 12px;
+  padding: 8px 12px;
+  background: #faf7fd;
+  border: 1px solid #ede6f8;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #4a156d;
   text-align: center;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 
 .caroGrid {
   display: grid;
-  grid-template-columns: repeat(3, 80px);
-  grid-template-rows: repeat(3, 80px);
-  gap: 6px;
-  background: #5b1e84;
-  padding: 6px;
-  border-radius: 6px;
+  grid-template-columns: repeat(3, 84px);
+  grid-template-rows: repeat(3, 84px);
+  gap: 8px;
+  background: linear-gradient(135deg, #7c3aed 0%, #4c1d95 100%);
+  padding: 10px;
+  border-radius: 12px;
   box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.3);
 }
 
 .caroCell {
-  width: 80px;
-  height: 80px;
+  width: 84px;
+  height: 84px;
   background: #ffffff;
   border: none;
-  border-radius: 4px;
-  font-size: 36px;
+  border-radius: 8px;
+  font-size: 38px;
   font-weight: 900;
-  font-family: Arial, sans-serif;
+  font-family: inherit;
   cursor: pointer;
   display: grid;
   place-items: center;
-  transition: background 0.15s ease;
+  transition: all 0.15s ease;
 }
 
 .caroCell:hover:not(:disabled) {
-  background: #fbf0d9;
+  background: #fef3c7;
+  transform: scale(1.02);
 }
 
 .caroCell.x {
-  color: #cc0000;
-  text-shadow: 1px 1px 2px rgba(204, 0, 0, 0.3);
+  color: #dc2626;
+  text-shadow: 1px 1px 2px rgba(220, 38, 38, 0.2);
 }
 
 .caroCell.o {
-  color: #0000cc;
-  text-shadow: 1px 1px 2px rgba(0, 0, 204, 0.3);
+  color: #2563eb;
+  text-shadow: 1px 1px 2px rgba(37, 99, 235, 0.2);
 }
 
 .caroCell:disabled {

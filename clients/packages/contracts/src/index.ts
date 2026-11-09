@@ -26,6 +26,15 @@ export interface AuthResponse {
   user: UserDto;
 }
 
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+}
+
+export interface RefreshTokenRequest {
+  refreshToken?: string | null;
+}
+
 export interface AdminOverviewDto {
   userCount: number;
   conversationCount: number;

@@ -33,17 +33,25 @@ function stringField(
 
 export class RetroRealtimeClient {
   private readonly connection: HubConnection;
+  private readonly getAccessToken?: (() => Promise<string>) | undefined;
+  private readonly subscribedConversations = new Set<string>();
   private readonly messageListeners = new Set<(message: MessageDto) => void>();
   private readonly reconnectedListeners = new Set<
     (connectionId?: string) => void
   >();
 
-  public constructor(url: string, getAccessToken?: () => Promise<string>) {
-    const connectionOptions: IHttpConnectionOptions = getAccessToken
-      ? {
-          accessTokenFactory: async () => getAccessToken(),
-        }
-      : {};
+  public constructor(
+    url: string,
+    getAccessToken?: (() => Promise<string>) | undefined,
+  ) {
+    this.getAccessToken = getAccessToken;
+    const connectionOptions: IHttpConnectionOptions = {};
+    if (getAccessToken) {
+      connectionOptions.accessTokenFactory = async () => {
+        const token = await getAccessToken();
+        return token ?? "";
+      };
+    }
 
     this.connection = new HubConnectionBuilder()
       .withUrl(url, connectionOptions)
@@ -57,7 +65,22 @@ export class RetroRealtimeClient {
       }
     });
 
+    this.connection.on(
+      "MessageRead",
+      (
+        conversationId: string,
+        readerId: string,
+        sequence: number,
+        readAt: string,
+      ) => {
+        for (const listener of this.messageReadListeners) {
+          listener(conversationId, readerId, Number(sequence), readAt);
+        }
+      },
+    );
+
     this.connection.onreconnected((connectionId) => {
+      void this.resubscribeConversations();
       for (const listener of this.reconnectedListeners) {
         listener(connectionId ?? undefined);
       }
@@ -281,6 +304,14 @@ export class RetroRealtimeClient {
   private readonly buzzListeners = new Set<
     (conversationId: string, senderId: string, sentAt: string) => void
   >();
+  private readonly messageReadListeners = new Set<
+    (
+      conversationId: string,
+      readerId: string,
+      sequence: number,
+      readAt: string,
+    ) => void
+  >();
   private readonly typingListeners = new Set<
     (conversationId: string, userId: string, isTyping: boolean) => void
   >();
@@ -310,29 +341,124 @@ export class RetroRealtimeClient {
   >();
 
   public async start(): Promise<void> {
-    if (this.connection.state === HubConnectionState.Disconnected) {
+    if (
+      this.connection.state === HubConnectionState.Connected ||
+      this.connection.state === HubConnectionState.Connecting
+    ) {
+      return;
+    }
+
+    if (this.getAccessToken) {
+      const token = await this.getAccessToken();
+      if (!token || !token.trim()) {
+        return;
+      }
+    }
+
+    try {
       await this.connection.start();
+      await this.resubscribeConversations();
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error);
+      if (msg.includes("stopped during negotiation")) {
+        return;
+      }
+      throw error;
     }
   }
 
-  public stop(): Promise<void> {
-    return this.connection.stop();
+  public async stop(): Promise<void> {
+    if (this.connection.state === HubConnectionState.Disconnected) {
+      return;
+    }
+    try {
+      await this.connection.stop();
+    } catch {
+      // Safe no-op if stop was interrupted
+    }
   }
 
-  public subscribeConversation(conversationId: string): Promise<void> {
-    return this.connection.invoke("SubscribeConversation", conversationId);
+  public get isConnected(): boolean {
+    return this.connection.state === HubConnectionState.Connected;
   }
 
-  public sendBuzz(conversationId: string): Promise<void> {
+  public async subscribeConversation(conversationId: string): Promise<void> {
+    if (!conversationId) return;
+    this.subscribedConversations.add(conversationId);
+    if (this.connection.state === HubConnectionState.Connected) {
+      try {
+        await this.connection.invoke("SubscribeConversation", conversationId);
+      } catch {
+        // Safe failover, will resubscribe on reconnect
+      }
+    }
+  }
+
+  public unsubscribeConversation(conversationId: string): void {
+    this.subscribedConversations.delete(conversationId);
+  }
+
+  private async resubscribeConversations(): Promise<void> {
+    if (this.connection.state !== HubConnectionState.Connected) return;
+    for (const conversationId of this.subscribedConversations) {
+      try {
+        await this.connection.invoke("SubscribeConversation", conversationId);
+      } catch {
+        // Ignore individual resubscription error
+      }
+    }
+  }
+
+  public async sendBuzz(conversationId: string): Promise<void> {
+    if (
+      this.connection.state !== HubConnectionState.Connected &&
+      this.connection.state !== undefined
+    ) {
+      return;
+    }
     return this.connection.invoke("SendBuzz", conversationId);
   }
 
-  public startTyping(conversationId: string): Promise<void> {
-    return this.connection.invoke("StartTyping", conversationId);
+  public async markRead(conversationId: string, sequence: number): Promise<void> {
+    if (
+      this.connection.state !== HubConnectionState.Connected &&
+      this.connection.state !== undefined
+    ) {
+      return;
+    }
+    try {
+      await this.connection.invoke("MarkRead", conversationId, sequence);
+    } catch {
+      // Ignore ephemeral markRead error
+    }
   }
 
-  public stopTyping(conversationId: string): Promise<void> {
-    return this.connection.invoke("StopTyping", conversationId);
+  public async startTyping(conversationId: string): Promise<void> {
+    if (
+      this.connection.state !== HubConnectionState.Connected &&
+      this.connection.state !== undefined
+    ) {
+      return;
+    }
+    try {
+      await this.connection.invoke("StartTyping", conversationId);
+    } catch {
+      // Ignore ephemeral typing error
+    }
+  }
+
+  public async stopTyping(conversationId: string): Promise<void> {
+    if (
+      this.connection.state !== HubConnectionState.Connected &&
+      this.connection.state !== undefined
+    ) {
+      return;
+    }
+    try {
+      await this.connection.invoke("StopTyping", conversationId);
+    } catch {
+      // Ignore ephemeral typing error
+    }
   }
 
   public startCall(
@@ -381,6 +507,20 @@ export class RetroRealtimeClient {
     this.messageListeners.add(listener);
     return () => {
       this.messageListeners.delete(listener);
+    };
+  }
+
+  public onMessageRead(
+    listener: (
+      conversationId: string,
+      readerId: string,
+      sequence: number,
+      readAt: string,
+    ) => void,
+  ): () => void {
+    this.messageReadListeners.add(listener);
+    return () => {
+      this.messageReadListeners.delete(listener);
     };
   }
 

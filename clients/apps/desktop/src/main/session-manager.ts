@@ -92,6 +92,34 @@ export class DesktopSessionManager {
     return this.getState();
   }
 
+  public async register(
+    username: string,
+    displayName: string,
+    password: string,
+  ): Promise<DesktopSessionState> {
+    this.requireEncryption();
+    const response = await this.request<AuthResponse>(
+      "/api/v1/auth/register",
+      {
+        method: "POST",
+        body: JSON.stringify({ username, displayName, password }),
+      },
+      false,
+    );
+    this.acceptSession(response);
+    return this.getState();
+  }
+
+  public async changePassword(
+    currentPassword: string,
+    newPassword: string,
+  ): Promise<void> {
+    await this.request<{ message: string }>("/api/v1/auth/password", {
+      method: "PUT",
+      body: JSON.stringify({ currentPassword, newPassword }),
+    });
+  }
+
   public async restore(): Promise<DesktopSessionState> {
     const stored = this.database.loadSession();
     if (!stored || !this.encryption.isAvailable()) {

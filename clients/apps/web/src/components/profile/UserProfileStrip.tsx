@@ -65,10 +65,10 @@ export function UserProfileStrip({
               onChange={e => void onStatusChange(e.target.value)}
               aria-label="Chọn trạng thái"
             >
-              <option value="online">Trực tuyến (Online)</option>
-              <option value="busy">Bận (Busy)</option>
-              <option value="away">Vắng mặt (Away)</option>
-              <option value="offline">Ẩn mình (Invisible)</option>
+              <option value="online">● Trực tuyến</option>
+              <option value="busy">● Bận</option>
+              <option value="away">● Vắng mặt</option>
+              <option value="offline">○ Ẩn mình</option>
             </select>
           </div>
 
@@ -135,8 +135,8 @@ export function UserProfileStrip({
           onClick={onOpenAddFriend}
           title="Thêm bạn bè mới vào danh bạ"
         >
-          <IconAdd size={12} style={{ marginRight: 3, verticalAlign: "middle" }} />
-          Thêm bạn
+          <IconAdd size={12} style={{ marginRight: 3, verticalAlign: "middle", flexShrink: 0 }} />
+          <span>Thêm bạn</span>
         </button>
         <button
           type="button"
@@ -144,18 +144,18 @@ export function UserProfileStrip({
           onClick={onOpenRooms}
           title="Duyệt phòng trò chuyện công cộng"
         >
-          <IconRooms size={12} style={{ marginRight: 3, verticalAlign: "middle" }} />
-          Phòng chat
+          <IconRooms size={12} style={{ marginRight: 3, verticalAlign: "middle", flexShrink: 0 }} />
+          <span>Phòng chat</span>
         </button>
         {hasActiveConversation && onSendBuzz && (
           <button
             type="button"
-            className="toolstripBtn"
+            className="toolstripBtn toolstripBuzzBtn"
             onClick={onSendBuzz}
             title="Gửi tín hiệu BUZZ!"
           >
-            <IconBuzz size={12} style={{ marginRight: 3, verticalAlign: "middle" }} />
-            BUZZ!
+            <IconBuzz size={12} style={{ marginRight: 3, verticalAlign: "middle", flexShrink: 0 }} />
+            <span>BUZZ!</span>
           </button>
         )}
       </div>

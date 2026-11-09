@@ -1,4 +1,5 @@
 using RetroMessenger.Application.Abstractions;
+using RetroMessenger.Contracts.Authentication;
 
 namespace RetroMessenger.Api.Endpoints;
 
@@ -13,7 +14,9 @@ public static class SessionEndpoints
             {
                 if (!currentUser.IsAuthenticated || currentUser.UserId == Guid.Empty)
                 {
-                    return Results.Unauthorized();
+                    return Results.Json(
+                        new { error = "unauthorized", message = "User is not authenticated." },
+                        statusCode: StatusCodes.Status401Unauthorized);
                 }
 
                 var user = await userRepo.GetByIdAsync(currentUser.UserId, ct);
@@ -22,7 +25,7 @@ public static class SessionEndpoints
                     return Results.NotFound();
                 }
 
-                return Results.Ok(new { user });
+                return Results.Ok(new SessionDto(user));
             })
             .WithTags("Session")
             .RequireAuthorization();

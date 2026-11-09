@@ -2,19 +2,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { RetroApiClient } from "@retro/api-client";
 import type { RetroRealtimeClient } from "@retro/realtime-client";
 import type { ConversationDto, MessageDto } from "@retro/contracts";
-import { ClientOutboxManager } from "@retro/chat-core";
+import { ClientOutboxManager, mergeMessages } from "@retro/chat-core";
 import { localDb } from "../storage/indexedDbAdapter";
-
-function mergeMessages(
-  current: MessageDto[],
-  incoming: MessageDto[],
-): MessageDto[] {
-  const byId = new Map(current.map(item => [item.id, item]));
-  for (const message of incoming) {
-    byId.set(message.id, message);
-  }
-  return [...byId.values()].sort((a, b) => a.sequence - b.sequence);
-}
 
 export function useConversations(
   api: RetroApiClient,
@@ -35,6 +24,7 @@ export function useConversations(
 
   const [isBuzzing, setIsBuzzing] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
+  const [readReceipts, setReadReceipts] = useState<Record<string, number>>({});
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastTypingSentRef = useRef<number>(0);
 
@@ -119,18 +109,19 @@ export function useConversations(
     void (async () => {
       const cached = await localDb.getMessages(userId, active.id);
       if (cancelled) return;
-      setMessages(cached);
-      messagesRef.current = cached;
+      const deduplicatedCached = mergeMessages([], cached);
+      setMessages(deduplicatedCached);
+      messagesRef.current = deduplicatedCached;
 
       try {
-        const latestSequence = cached.reduce(
+        const latestSequence = deduplicatedCached.reduce(
           (max, item) => Math.max(max, item.sequence),
           0,
         );
         const remote = await api.listMessages(active.id, latestSequence);
         if (cancelled) return;
 
-        const merged = mergeMessages(cached, remote);
+        const merged = mergeMessages(deduplicatedCached, remote);
         setMessages(merged);
         messagesRef.current = merged;
         await localDb.saveMessages(userId, merged);
@@ -160,7 +151,7 @@ export function useConversations(
       if (activeRef.current?.id === convId) {
         setIsBuzzing(true);
         onPlayBuzzSound();
-        setTimeout(() => setIsBuzzing(false), 600);
+        setTimeout(() => setIsBuzzing(false), 800);
       }
     });
 
@@ -174,18 +165,40 @@ export function useConversations(
       }
     });
 
+    const unsubRead = realtime.onMessageRead((convId, readerId, sequence) => {
+      if (readerId !== userId) {
+        setReadReceipts((prev) => ({
+          ...prev,
+          [convId]: Math.max(prev[convId] ?? 0, sequence),
+        }));
+      }
+    });
+
     return () => {
       unsubMsg();
       unsubBuzz();
       unsubTyping();
+      unsubRead();
     };
   }, [onPlayBuzzSound, onPlayMessageSound, realtime, userId]);
 
   // Subscribe to active conversation in SignalR
   useEffect(() => {
-    if (!active) return;
-    void realtime.subscribeConversation(active.id);
-  }, [active, realtime]);
+    if (!active || !userId) return;
+    void realtime.subscribeConversation(active.id).catch(() => {});
+  }, [active, realtime, userId]);
+
+  // Auto mark incoming messages as read when active conversation has unread messages
+  useEffect(() => {
+    if (!active || !userId || messages.length === 0) return;
+    const latestIncoming = messages
+      .filter((m) => m.senderId !== userId && m.sequence > 0)
+      .reduce((max, m) => Math.max(max, m.sequence), 0);
+
+    if (latestIncoming > 0) {
+      void realtime.markRead(active.id, latestIncoming).catch(() => {});
+    }
+  }, [active, messages, realtime, userId]);
 
   // Send message
   const sendMessage = useCallback(
@@ -224,10 +237,12 @@ export function useConversations(
           clientMessageId,
           content.trim(),
         );
-        const nextCached = mergeMessages(messagesRef.current, [response.message]);
-        setMessages(nextCached);
-        messagesRef.current = nextCached;
-        await localDb.saveMessages(userId, nextCached);
+        setMessages(current => {
+          const nextCached = mergeMessages(current, [response.message]);
+          messagesRef.current = nextCached;
+          void localDb.saveMessages(userId, nextCached);
+          return nextCached;
+        });
       } catch {
         outbox.enqueue(active.id, content.trim(), clientMessageId);
         await localDb.saveOutbox(userId, outbox.getAll());
@@ -241,14 +256,17 @@ export function useConversations(
     if (!active) return;
     setIsBuzzing(true);
     onPlayBuzzSound();
-    setTimeout(() => setIsBuzzing(false), 600);
+    setTimeout(() => setIsBuzzing(false), 800);
 
     try {
       await realtime.sendBuzz(active.id);
     } catch {
       // Offline fallback
     }
-  }, [active, onPlayBuzzSound, realtime]);
+
+    // Send persistent BUZZ message so both parties see the banner in transcript
+    void sendMessage("BUZZ!!!");
+  }, [active, onPlayBuzzSound, realtime, sendMessage]);
 
   // Handle typing notification
   const notifyTyping = useCallback(() => {
@@ -256,9 +274,9 @@ export function useConversations(
     const now = Date.now();
     if (now - lastTypingSentRef.current > 3000) {
       lastTypingSentRef.current = now;
-      void realtime.startTyping(active.id);
+      void realtime.startTyping(active.id).catch(() => {});
       setTimeout(() => {
-        void realtime.stopTyping(active.id);
+        void realtime.stopTyping(active.id).catch(() => {});
       }, 4000);
     }
   }, [active, realtime]);
@@ -277,6 +295,7 @@ export function useConversations(
     notifyTyping,
     isBuzzing,
     isTyping,
+    lastReadSequence: active ? (readReceipts[active.id] ?? 0) : 0,
   };
 }
 

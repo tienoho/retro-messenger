@@ -16,6 +16,7 @@ export interface DesktopTranscriptProps {
   error: string | null;
   imvironment?: ImvironmentDefinition | undefined;
   onDownloadAttachment: (attachmentId: string, fileName: string) => Promise<void>;
+  isTyping?: boolean | undefined;
 }
 
 export function DesktopTranscript({
@@ -27,7 +28,12 @@ export function DesktopTranscript({
   error,
   imvironment,
   onDownloadAttachment,
+  isTyping = false,
 }: DesktopTranscriptProps) {
+  const peerInitial = (
+    active?.title.trim().slice(0, 1) || "B"
+  ).toUpperCase();
+
   return (
     <>
       <div
@@ -42,7 +48,11 @@ export function DesktopTranscript({
             : undefined
         }
       >
-        {!active && (
+        {active ? (
+          <div className="retroTranscriptNotice">
+            *** Phiên trò chuyện với <strong>{active.title}</strong> ***
+          </div>
+        ) : (
           <p className="emptyState">Chưa có cuộc trò chuyện nào.</p>
         )}
         {messages.map((message) => (
@@ -66,6 +76,21 @@ export function DesktopTranscript({
             </small>
           </article>
         ))}
+
+        {/* Facebook Messenger-style Typing Bubble */}
+        {isTyping && active && (
+          <div className="fbTypingContainer">
+            <div className="fbTypingAvatar">{peerInitial}</div>
+            <div className="fbTypingBubble">
+              <div className="fbTypingDots">
+                <span className="fbDot dot1" />
+                <span className="fbDot dot2" />
+                <span className="fbDot dot3" />
+              </div>
+            </div>
+            <span className="fbTypingText">{active.title} đang nhập tin nhắn...</span>
+          </div>
+        )}
       </div>
 
       {transfer && (

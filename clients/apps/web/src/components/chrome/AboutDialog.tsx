@@ -10,8 +10,8 @@ export function AboutDialog({ onClose }: AboutDialogProps) {
       <div className="aboutDialog" onClick={(e) => e.stopPropagation()}>
         <div className="aboutTitleBar">
           <div className="aboutTitleBrand">
-            <span className="yIcon">R!</span>
-            <span>About Retro! Messenger</span>
+            <span className="yIcon">Y!</span>
+            <span>About Yahoo! Messenger</span>
           </div>
           <button type="button" className="closeBtn" onClick={onClose}>
             ✕
@@ -20,9 +20,9 @@ export function AboutDialog({ onClose }: AboutDialogProps) {
 
         <div className="aboutBody">
           <div className="aboutBanner">
-            <div className="aboutLogo">R!</div>
+            <div className="aboutLogo">Y!</div>
             <div className="aboutText">
-              <h2>Retro! Messenger</h2>
+              <h2>Yahoo! Messenger</h2>
               <p className="aboutVersion">Version 9.0 (Gold Remastered Edition)</p>
               <p className="aboutSubtext">
                 Nền tảng nhắn tin hoài niệm thời hoàng kim Yahoo! Messenger

@@ -40,6 +40,8 @@ export function BuddyList({
   onSendBuzz,
   onStartCall,
 }: BuddyListProps) {
+  const [filterQuery, setFilterQuery] = useState("");
+  const [showAddForm, setShowAddForm] = useState(false);
   const [newFriendUsername, setNewFriendUsername] = useState("");
   const [onlineOpen, setOnlineOpen] = useState(true);
   const [offlineOpen, setOfflineOpen] = useState(true);
@@ -52,32 +54,103 @@ export function BuddyList({
     const ok = await onAddFriend(newFriendUsername.trim());
     if (ok) {
       setNewFriendUsername("");
+      setShowAddForm(false);
     }
   };
 
-  const onlineFriends = friends.filter((f) => f.status === "online");
-  const offlineFriends = friends.filter((f) => f.status !== "online");
+  const filteredFriends = friends.filter((f) => {
+    if (!filterQuery.trim()) return true;
+    const q = filterQuery.toLowerCase();
+    return (
+      f.displayName.toLowerCase().includes(q) ||
+      f.username.toLowerCase().includes(q)
+    );
+  });
+
+  const onlineFriends = filteredFriends.filter((f) => f.status === "online");
+  const offlineFriends = filteredFriends.filter((f) => f.status !== "online");
 
   return (
-    <div className="buddyContainer">
-      <form
-        onSubmit={handleAddSubmit}
-        style={{ display: "flex", gap: "4px", padding: "6px" }}
-      >
-        <input
-          className="searchInput"
-          placeholder="Nhập Yahoo! ID cần kết bạn..."
-          value={newFriendUsername}
-          onChange={(e) => setNewFriendUsername(e.target.value)}
-        />
-        <button
-          type="submit"
-          className="toolstripBtn"
-          style={{ flex: "none", padding: "4px 8px" }}
-        >
-          + Thêm
-        </button>
-      </form>
+    <>
+      {/* Quick Search & Add Form Controls */}
+      <div className="buddyControlsStrip">
+        <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+          <div style={{ position: "relative", flex: 1, minWidth: 0 }}>
+            <input
+              className="searchInput"
+              style={{ width: "100%", paddingRight: filterQuery ? "24px" : "8px" }}
+              placeholder="🔍 Lọc danh bạ bạn bè..."
+              value={filterQuery}
+              onChange={(e) => setFilterQuery(e.target.value)}
+            />
+            {filterQuery && (
+              <button
+                type="button"
+                onClick={() => setFilterQuery("")}
+                style={{
+                  position: "absolute",
+                  right: "6px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  background: "none",
+                  border: "none",
+                  color: "#94a3b8",
+                  cursor: "pointer",
+                  fontSize: "12px",
+                  fontWeight: "bold",
+                }}
+                title="Xóa tìm kiếm"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+          <button
+            type="button"
+            className="toolstripBtn"
+            onClick={() => setShowAddForm((p) => !p)}
+            title="Thêm bạn mới"
+            style={{ flex: "none", padding: "5px 10px", fontSize: "11px" }}
+          >
+            {showAddForm ? "Ẩn" : "+ Thêm"}
+          </button>
+        </div>
+
+        {showAddForm && (
+          <form
+            onSubmit={handleAddSubmit}
+            style={{
+              display: "flex",
+              gap: "4px",
+              marginTop: "6px",
+              animation: "fadeInMsg 0.15s ease-out",
+            }}
+          >
+            <input
+              className="searchInput"
+              placeholder="Nhập Yahoo! ID cần kết bạn..."
+              value={newFriendUsername}
+              onChange={(e) => setNewFriendUsername(e.target.value)}
+              autoFocus
+            />
+            <button
+              type="submit"
+              className="toolstripBtn"
+              style={{
+                flex: "none",
+                padding: "4px 8px",
+                background: "#7c3aed",
+                color: "#ffffff",
+                border: "none",
+              }}
+            >
+              Gửi lời mời
+            </button>
+          </form>
+        )}
+      </div>
+
+      <div className="buddyContainer">
 
       {/* Friend Requests */}
       {requests.incoming.length > 0 && (
@@ -105,7 +178,7 @@ export function BuddyList({
                     <span className="buddyName">{req.senderDisplayName}</span>
                     <span className="buddyStatusText">Muốn kết bạn</span>
                   </div>
-                  <div style={{ display: "flex", gap: "3px" }}>
+                  <div style={{ display: "flex", gap: "3px", flexShrink: 0 }}>
                     <button
                       type="button"
                       className="toolstripBtn"
@@ -153,7 +226,10 @@ export function BuddyList({
                 onClick={() =>
                   void onStartChat(friend.userId, friend.displayName)
                 }
-                title="Nhấp đúp để mở trò chuyện"
+                onDoubleClick={() =>
+                  void onStartChat(friend.userId, friend.displayName)
+                }
+                title="Nhấp để mở trò chuyện, nhấp đúp để vào ngay"
               >
                 <span className="buddySmiley">
                   <StatusDotOnline size={12} />
@@ -241,6 +317,10 @@ export function BuddyList({
                 onClick={() =>
                   void onStartChat(friend.userId, friend.displayName)
                 }
+                onDoubleClick={() =>
+                  void onStartChat(friend.userId, friend.displayName)
+                }
+                title="Nhấp để gửi tin nhắn ngoại tuyến"
               >
                 <span className="buddySmiley">
                   <StatusDotInvisible size={12} />
@@ -306,7 +386,7 @@ export function BuddyList({
                   className="buddyItem"
                   style={{ justifyContent: "space-between" }}
                 >
-                  <span className="buddyName" style={{ color: "#888" }}>
+                  <span className="buddyName" style={{ color: "#888", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                     {b.displayName}
                   </span>
                   <button
@@ -323,6 +403,7 @@ export function BuddyList({
           )}
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 }

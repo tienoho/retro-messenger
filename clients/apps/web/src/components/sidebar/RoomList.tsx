@@ -23,20 +23,20 @@ export function RoomList({ rooms, onCreateRoom, onJoinRoom }: RoomListProps) {
   };
 
   return (
-    <div className="buddyContainer">
-      <div style={{ padding: "6px" }}>
+    <>
+      <div className="roomControlsStrip">
         <button
           type="button"
           className="toolstripBtn"
-          style={{ width: "100%", marginBottom: "8px" }}
-          onClick={() => setShowCreateRoom(prev => !prev)}
+          style={{ width: "100%", marginBottom: showCreateRoom ? "8px" : "0" }}
+          onClick={() => setShowCreateRoom((prev) => !prev)}
         >
           {showCreateRoom ? (
-            "✕ Đóng"
+            "✕ Đóng lại"
           ) : (
             <>
               <IconAdd size={12} style={{ marginRight: 4, verticalAlign: "middle" }} />
-              Tạo phòng mới
+              <span>Tạo phòng mới</span>
             </>
           )}
         </button>
@@ -44,28 +44,34 @@ export function RoomList({ rooms, onCreateRoom, onJoinRoom }: RoomListProps) {
         {showCreateRoom && (
           <form
             onSubmit={handleCreateSubmit}
-            style={{ display: "flex", flexDirection: "column", gap: "6px", marginBottom: "8px" }}
+            style={{ display: "flex", flexDirection: "column", gap: "6px", marginTop: "8px" }}
           >
             <input
               className="searchInput"
               placeholder="Tên phòng..."
               value={newRoomTitle}
-              onChange={e => setNewRoomTitle(e.target.value)}
+              onChange={(e) => setNewRoomTitle(e.target.value)}
               required
             />
             <textarea
               className="searchInput"
-              placeholder="Mô tả..."
+              placeholder="Mô tả phòng..."
               value={newRoomDesc}
-              onChange={e => setNewRoomDesc(e.target.value)}
+              onChange={(e) => setNewRoomDesc(e.target.value)}
               rows={2}
             />
-            <button type="submit" className="toolstripBtn">
+            <button
+              type="submit"
+              className="toolstripBtn"
+              style={{ background: "#7c3aed", color: "#ffffff", border: "none" }}
+            >
               Tạo và vào phòng ngay
             </button>
           </form>
         )}
+      </div>
 
+      <div className="buddyContainer">
         <div className="categoryGroup">
           <div className="categoryHeader">
             <span>
@@ -74,20 +80,25 @@ export function RoomList({ rooms, onCreateRoom, onJoinRoom }: RoomListProps) {
             </span>
           </div>
           <div className="categoryItems">
-            {rooms.map(room => (
+            {rooms.map((room) => (
               <div
                 key={room.id}
                 className="buddyItem"
-                style={{ justifyContent: "space-between" }}
+                style={{ justifyContent: "space-between", gap: "8px" }}
               >
                 <div className="buddyInfo">
-                  <span className="buddyName">{room.title}</span>
-                  <span className="buddyStatusText">{room.description || `${room.memberCount} thành viên`}</span>
+                  <span className="buddyName" title={room.title}>{room.title}</span>
+                  <span
+                    className="buddyStatusText"
+                    title={room.description || `${room.memberCount} thành viên`}
+                  >
+                    {room.description || `${room.memberCount} thành viên`}
+                  </span>
                 </div>
                 <button
                   type="button"
                   className="toolstripBtn"
-                  style={{ padding: "3px 8px", fontSize: "11px" }}
+                  style={{ padding: "3px 8px", fontSize: "11px", flexShrink: 0 }}
                   onClick={() => void onJoinRoom(room.id, room.title)}
                 >
                   Vào phòng
@@ -102,7 +113,7 @@ export function RoomList({ rooms, onCreateRoom, onJoinRoom }: RoomListProps) {
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
 

@@ -2,6 +2,8 @@ import type {
   DesktopConversationRequest,
   DesktopEnqueueMessageRequest,
   DesktopLoginRequest,
+  DesktopRegisterRequest,
+  DesktopChangePasswordRequest,
   DesktopNotificationRequest,
   DesktopContactRequest,
   DesktopDownloadAttachmentRequest,
@@ -61,6 +63,37 @@ export function validateLoginRequest(value: unknown): DesktopLoginRequest {
   return {
     username: boundedString(input.username, "username", 1, 64),
     password: boundedString(input.password, "password", 1, 1_024, false),
+  };
+}
+
+export function validateRegisterRequest(value: unknown): DesktopRegisterRequest {
+  const input = record(value);
+  return {
+    username: boundedString(input.username, "username", 3, 64),
+    displayName: boundedString(input.displayName, "displayName", 1, 64),
+    password: boundedString(input.password, "password", 6, 1_024, false),
+  };
+}
+
+export function validateChangePasswordRequest(
+  value: unknown,
+): DesktopChangePasswordRequest {
+  const input = record(value);
+  return {
+    currentPassword: boundedString(
+      input.currentPassword,
+      "currentPassword",
+      1,
+      1_024,
+      false,
+    ),
+    newPassword: boundedString(
+      input.newPassword,
+      "newPassword",
+      6,
+      1_024,
+      false,
+    ),
   };
 }
 

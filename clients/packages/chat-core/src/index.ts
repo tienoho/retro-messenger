@@ -20,12 +20,51 @@ export function mergeMessages(
   current: MessageDto[],
   incoming: MessageDto[],
 ): MessageDto[] {
-  const byId = new Map<string, MessageDto>();
+  const all = [...current];
 
-  for (const item of current) byId.set(item.id, item);
-  for (const item of incoming) byId.set(item.id, item);
+  for (const item of incoming) {
+    const index = all.findIndex(
+      existing =>
+        existing.id === item.id ||
+        (item.clientMessageId && existing.clientMessageId === item.clientMessageId) ||
+        (item.clientMessageId && existing.id === item.clientMessageId) ||
+        (existing.clientMessageId && existing.clientMessageId === item.id),
+    );
 
-  return [...byId.values()].sort((a, b) => a.sequence - b.sequence);
+    if (index !== -1) {
+      all[index] = item;
+    } else {
+      all.push(item);
+    }
+  }
+
+  // Prioritize authoritative server records (where id !== clientMessageId) over local optimistic placeholders
+  all.sort((a, b) => {
+    const aIsServer = a.clientMessageId ? a.id !== a.clientMessageId : true;
+    const bIsServer = b.clientMessageId ? b.id !== b.clientMessageId : true;
+    if (aIsServer !== bIsServer) {
+      return aIsServer ? -1 : 1;
+    }
+    return a.sequence - b.sequence;
+  });
+
+  const finalMessages: MessageDto[] = [];
+  const seenIds = new Set<string>();
+  const seenClientIds = new Set<string>();
+
+  for (const msg of all) {
+    if (seenIds.has(msg.id)) continue;
+    if (msg.clientMessageId && seenClientIds.has(msg.clientMessageId)) continue;
+
+    seenIds.add(msg.id);
+    if (msg.clientMessageId) {
+      seenClientIds.add(msg.clientMessageId);
+      seenIds.add(msg.clientMessageId);
+    }
+    finalMessages.push(msg);
+  }
+
+  return finalMessages.sort((a, b) => a.sequence - b.sequence);
 }
 
 export function hasSequenceGap(messages: MessageDto[]): boolean {

@@ -16,7 +16,7 @@ export function DesktopAboutDialog({ onClose }: DesktopAboutDialogProps) {
         <div className="retroModalHeader">
           <div className="retroModalTitle">
             <YahooLogoIcon size={14} style={{ marginRight: 6 }} />
-            <span id="aboutTitle">Giới thiệu Retro Yahoo! Messenger</span>
+            <span id="aboutTitle">Giới thiệu Yahoo! Messenger</span>
           </div>
           <button
             type="button"
@@ -33,7 +33,7 @@ export function DesktopAboutDialog({ onClose }: DesktopAboutDialogProps) {
               <YahooLogoIcon size={36} />
             </div>
             <div>
-              <h2 className="aboutHeading">Retro Yahoo! Messenger</h2>
+              <h2 className="aboutHeading">Yahoo! Messenger</h2>
               <div className="aboutVersion">Phiên bản 9.0 (Nostalgia Edition)</div>
             </div>
           </div>

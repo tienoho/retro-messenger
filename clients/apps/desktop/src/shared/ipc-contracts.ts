@@ -21,6 +21,8 @@ import type {
 export const desktopChannels = {
   getSession: "desktop:session:get",
   login: "desktop:auth:login",
+  register: "desktop:auth:register",
+  changePassword: "desktop:auth:change-password",
   logout: "desktop:auth:logout",
   listConversations: "desktop:conversations:list",
   listMessages: "desktop:messages:list",
@@ -83,6 +85,17 @@ export interface DesktopSessionState {
 export interface DesktopLoginRequest {
   username: string;
   password: string;
+}
+
+export interface DesktopRegisterRequest {
+  username: string;
+  displayName: string;
+  password: string;
+}
+
+export interface DesktopChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
 }
 
 export interface DesktopConversationRequest {
@@ -176,6 +189,8 @@ export interface DesktopIceCandidateRequest extends DesktopConversationRequest {
 export interface RetroDesktopBridge {
   getSession(): Promise<DesktopSessionState>;
   login(request: DesktopLoginRequest): Promise<DesktopSessionState>;
+  register(request: DesktopRegisterRequest): Promise<DesktopSessionState>;
+  changePassword(request: DesktopChangePasswordRequest): Promise<void>;
   logout(): Promise<void>;
   listConversations(): Promise<ConversationDto[]>;
   listMessages(request: DesktopConversationRequest): Promise<MessageDto[]>;

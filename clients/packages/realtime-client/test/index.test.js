@@ -182,4 +182,51 @@ describe("RetroRealtimeClient", () => {
     assert.strictEqual(receivedIce.sdpMid, "audio");
     assert.strictEqual(receivedIce.sdpMLineIndex, 0);
   });
+
+  it("should safely handle subscribeConversation when disconnected and resubscribe on reconnect", async () => {
+    const client = new RetroRealtimeClient("http://localhost:5000/realtime");
+    const invocations = [];
+    client.connection.invoke = async (methodName, ...args) => {
+      invocations.push({ methodName, args });
+    };
+
+    // When disconnected (default HubConnectionState.Disconnected)
+    await client.subscribeConversation("conv-401");
+    // Should NOT throw, but records the subscription without calling invoke yet
+    assert.strictEqual(invocations.length, 0);
+
+    // Simulate connection becomes Connected
+    client.connection._connectionState = "Connected";
+    await client.subscribeConversation("conv-402");
+    assert.strictEqual(invocations.length, 1);
+    assert.deepStrictEqual(invocations[0], {
+      methodName: "SubscribeConversation",
+      args: ["conv-402"],
+    });
+
+    // Simulate reconnection triggers resubscribe of all recorded conversations
+    invocations.length = 0;
+    for (const callback of client.connection._reconnectedCallbacks) {
+      await callback("connection-reconnected");
+    }
+
+    assert.strictEqual(invocations.length, 2);
+    const subscribed = invocations.map(inv => inv.args[0]);
+    assert.ok(subscribed.includes("conv-401"));
+    assert.ok(subscribed.includes("conv-402"));
+  });
+
+  it("should safely no-op for markRead and typing indicators when disconnected", async () => {
+    const client = new RetroRealtimeClient("http://localhost:5000/realtime");
+    let called = false;
+    client.connection.invoke = async () => {
+      called = true;
+    };
+
+    await client.markRead("conv-501", 10);
+    await client.startTyping("conv-501");
+    await client.stopTyping("conv-501");
+
+    assert.strictEqual(called, false);
+  });
 });

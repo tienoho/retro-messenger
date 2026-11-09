@@ -21,6 +21,7 @@ import { AuthDialog } from "./components/auth/AuthDialog";
 import { WindowTitleBar } from "./components/chrome/WindowTitleBar";
 import { WindowMenuBar } from "./components/chrome/WindowMenuBar";
 import { AboutDialog } from "./components/chrome/AboutDialog";
+import { ChangePasswordDialog } from "./components/chrome/ChangePasswordDialog";
 import { CustomStatusDialog } from "./components/chrome/CustomStatusDialog";
 import { SkinPickerDialog } from "./components/chrome/SkinPickerDialog";
 import { CaroGameDialog } from "./components/chat/CaroGameDialog";
@@ -74,7 +75,7 @@ export function App() {
   const api = useMemo(() => new RetroApiClient(apiBase), []);
   const realtime = useMemo(
     () =>
-      new RetroRealtimeClient(realtimeUrl, async () => api.getAccessToken()),
+      new RetroRealtimeClient(realtimeUrl, async () => api.getValidAccessToken()),
     [api],
   );
 
@@ -90,6 +91,7 @@ export function App() {
 
   // Authentication State
   const [authenticated, setAuthenticated] = useState(false);
+  const [restoringSession, setRestoringSession] = useState(true);
   const [session, setSession] = useState<SessionDto | null>(null);
   const [authenticating, setAuthenticating] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
@@ -97,6 +99,7 @@ export function App() {
   // Sound & Modals
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [showAboutDialog, setShowAboutDialog] = useState(false);
+  const [showChangePasswordDialog, setShowChangePasswordDialog] = useState(false);
   const [showCustomStatusDialog, setShowCustomStatusDialog] = useState(false);
   const [showSkinDialog, setShowSkinDialog] = useState(false);
   const [showGameDialog, setShowGameDialog] = useState(false);
@@ -121,6 +124,7 @@ export function App() {
   const [userStatus, setUserStatus] = useState<string>("online");
   const [customStatus, setCustomStatus] = useState<string>("");
   const [draft, setDraft] = useState("");
+  const [mobileShowSidebar, setMobileShowSidebar] = useState(false);
   const [actionAlert, setActionAlert] = useState<{
     type: "success" | "error";
     text: string;
@@ -174,6 +178,7 @@ export function App() {
     notifyTyping,
     isBuzzing,
     isTyping,
+    lastReadSequence,
   } = useConversations(
     api,
     realtime,
@@ -221,22 +226,36 @@ export function App() {
     };
   }, [flushOutbox]);
 
+  // Keep stable refs for callbacks to avoid re-triggering SignalR start/stop lifecycle
+  const soundEnabledRef = useRef(soundEnabled);
+  soundEnabledRef.current = soundEnabled;
+  const playDoorOpenRef = useRef(playDoorOpen);
+  playDoorOpenRef.current = playDoorOpen;
+  const playDoorSlamRef = useRef(playDoorSlam);
+  playDoorSlamRef.current = playDoorSlam;
+  const flushOutboxRef = useRef(flushOutbox);
+  flushOutboxRef.current = flushOutbox;
+  const loadConversationsRef = useRef(loadConversations);
+  loadConversationsRef.current = loadConversations;
+  const setFriendsRef = useRef(setFriends);
+  setFriendsRef.current = setFriends;
+
   // Realtime connection lifecycle & Presence listener
   useEffect(() => {
     if (!authenticated || !session) return;
 
     const unsubPresence = realtime.onPresence((event) => {
-      setFriends((current) =>
+      setFriendsRef.current((current) =>
         current.map((friend) => {
           if (friend.userId === event.userId) {
-            if (soundEnabled) {
+            if (soundEnabledRef.current) {
               if (event.status === "online" && friend.status !== "online") {
-                playDoorOpen();
+                playDoorOpenRef.current();
               } else if (
                 event.status !== "online" &&
                 friend.status === "online"
               ) {
-                playDoorSlam();
+                playDoorSlamRef.current();
               }
             }
             return { ...friend, status: event.status };
@@ -248,8 +267,8 @@ export function App() {
 
     const unsubReconnected = realtime.onReconnected(() => {
       setRealtimeStatus("Trực tuyến");
-      void loadConversations();
-      void flushOutbox();
+      void loadConversationsRef.current();
+      void flushOutboxRef.current();
     });
 
     void realtime
@@ -266,17 +285,43 @@ export function App() {
       unsubReconnected();
       void realtime.stop();
     };
-  }, [
-    authenticated,
-    flushOutbox,
-    loadConversations,
-    playDoorOpen,
-    playDoorSlam,
-    realtime,
-    session,
-    setFriends,
-    soundEnabled,
-  ]);
+  }, [authenticated, session?.user.id, realtime]);
+
+  // Auto restore web session via HttpOnly cookie on mount
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const restored = await api.restoreWebSession();
+        if (cancelled) return;
+        if (restored) {
+          setSession({ user: restored.user });
+          setUserStatus(restored.user.status);
+          setCustomStatus(restored.user.customStatus ?? "");
+          setAuthenticated(true);
+        }
+      } catch {
+        // No session cookie or expired
+      } finally {
+        if (!cancelled) {
+          setRestoringSession(false);
+        }
+      }
+    })();
+
+    const unsubExpired = api.onSessionExpired(() => {
+      setAuthenticated(false);
+      setSession(null);
+      setActive(null);
+      setOpenTabs([]);
+      setAuthError("Phiên làm việc đã hết hạn. Vui lòng đăng nhập lại Yahoo! ID.");
+    });
+
+    return () => {
+      cancelled = true;
+      unsubExpired();
+    };
+  }, [api, setActive]);
 
   // Load initial workspace data when authenticated
   useEffect(() => {
@@ -292,15 +337,23 @@ export function App() {
   }, [authenticated, loadContacts, loadConversations, loadRooms]);
 
   // Auth actions
-  const handleLogin = async (u: string, p: string) => {
+  const handleLogin = async (u: string, p: string, invisible?: boolean) => {
     setAuthenticating(true);
     setAuthError(null);
     try {
       const response = await api.login(u, p);
       setSession({ user: response.user });
-      setUserStatus(response.user.status);
+      const initialStatus = invisible ? "invisible" : response.user.status;
+      setUserStatus(initialStatus);
       setCustomStatus(response.user.customStatus ?? "");
       setAuthenticated(true);
+      if (invisible) {
+        try {
+          await api.updateStatus("invisible");
+        } catch {
+          // Ignored
+        }
+      }
       if (soundEnabled) playYahooChime();
     } catch (caught) {
       setAuthError(formatAuthError(caught));
@@ -309,21 +362,38 @@ export function App() {
     }
   };
 
-  const handleRegister = async (u: string, dn: string, p: string) => {
+  const handleRegister = async (u: string, dn: string, p: string, invisible?: boolean) => {
     setAuthenticating(true);
     setAuthError(null);
     try {
       const response = await api.register(u, dn, p);
       setSession({ user: response.user });
-      setUserStatus(response.user.status);
+      const initialStatus = invisible ? "invisible" : response.user.status;
+      setUserStatus(initialStatus);
       setCustomStatus(response.user.customStatus ?? "");
       setAuthenticated(true);
+      if (invisible) {
+        try {
+          await api.updateStatus("invisible");
+        } catch {
+          // Ignored
+        }
+      }
       if (soundEnabled) playYahooChime();
     } catch (caught) {
       setAuthError(formatAuthError(caught));
     } finally {
       setAuthenticating(false);
     }
+  };
+
+  const handleChangePassword = async (currentPassword: string, newPassword: string) => {
+    await api.changePassword(currentPassword, newPassword);
+    setActionAlert({
+      type: "success",
+      text: "Đổi mật khẩu thành công! Mật khẩu Yahoo! ID mới đã được cập nhật.",
+    });
+    window.setTimeout(() => setActionAlert(null), 4000);
   };
 
   const handleLogout = async () => {
@@ -454,9 +524,47 @@ export function App() {
     const target = await startChatWithFriend(friendUserId, friendDisplayName);
     if (target) {
       setActive(target);
+      setMobileShowSidebar(false);
       await loadConversations();
     }
   };
+
+  if (restoringSession) {
+    return (
+      <main
+        className="authShell"
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          minHeight: "100vh",
+          background: "#ede7f6",
+          gap: "14px",
+        }}
+      >
+        <div
+          style={{
+            width: "56px",
+            height: "56px",
+            borderRadius: "14px",
+            background: "linear-gradient(135deg, #ffe066 0%, #fed633 100%)",
+            color: "#471a68",
+            fontSize: "26px",
+            fontWeight: "900",
+            display: "grid",
+            placeItems: "center",
+            boxShadow: "0 6px 18px rgba(254, 214, 51, 0.45)",
+          }}
+        >
+          R!
+        </div>
+        <div style={{ color: "#5b1e84", fontSize: "14px", fontWeight: "700" }}>
+          Đang khôi phục phiên kết nối Yahoo! Messenger…
+        </div>
+      </main>
+    );
+  }
 
   // If unauthenticated, show Retro Yahoo! Sign In Box
   if (!authenticated || !session) {
@@ -483,7 +591,7 @@ export function App() {
       }
     >
       <WindowTitleBar
-        title={`Retro! Messenger — ${session.user.displayName}`}
+        title={`Yahoo! Messenger — ${session.user.displayName}`}
         isOnline={isOnline}
         soundEnabled={soundEnabled}
         onToggleSound={() => setSoundEnabled((prev) => !prev)}
@@ -496,6 +604,7 @@ export function App() {
         onOpenRooms={() => void loadRooms()}
         onOpenAbout={() => setShowAboutDialog(true)}
         onOpenCustomStatus={() => setShowCustomStatusDialog(true)}
+        onOpenChangePassword={() => setShowChangePasswordDialog(true)}
         onOpenSkinPicker={() => setShowSkinDialog(true)}
         onOpenGame={() => setShowGameDialog(true)}
         onSendBuzz={active ? handleSendBuzz : undefined}
@@ -524,6 +633,7 @@ export function App() {
 
       <div className="retroAppBody">
         <Sidebar
+          className={mobileShowSidebar || !active ? "mobileOpen" : "mobileHidden"}
           user={session.user}
           userStatus={userStatus}
           customStatus={customStatus}
@@ -533,7 +643,10 @@ export function App() {
           hasActiveConversation={Boolean(active)}
           conversations={conversations}
           activeId={active?.id ?? null}
-          onSelectConversation={setActive}
+          onSelectConversation={(conv) => {
+            setActive(conv);
+            setMobileShowSidebar(false);
+          }}
           friends={friends}
           requests={requests}
           blocked={blocked}
@@ -564,23 +677,40 @@ export function App() {
           }}
           rooms={rooms}
           onCreateRoom={createRoom}
-          onJoinRoom={joinRoom}
+          onJoinRoom={(roomId, roomName) => {
+            setMobileShowSidebar(false);
+            return joinRoom(roomId, roomName);
+          }}
         />
 
-        <section className="chat">
+        <section className={`chat ${!mobileShowSidebar && active ? "mobileOpen" : "mobileHidden"}`}>
           <ChatTabs
             tabs={openTabs}
             activeId={active?.id}
-            onSelectTab={setActive}
+            onSelectTab={(tab) => {
+              setActive(tab);
+              setMobileShowSidebar(false);
+            }}
             onCloseTab={handleCloseTab}
           />
           <div className="imHeader">
             <div className="imRecipient">
+              <button
+                type="button"
+                className="imMobileBackBtn"
+                title="Quay lại danh sách trò chuyện"
+                onClick={() => setMobileShowSidebar(true)}
+              >
+                ‹ Danh bạ
+              </button>
               <div className="imRecipientAvatar">
-                {active?.title?.slice(0, 1) ?? "R"}
+                {active?.title?.slice(0, 1) ?? "Y"}
               </div>
-              <div>
-                <div className="imRecipientTitle">
+              <div className="imRecipientMeta">
+                <div
+                  className="imRecipientTitle"
+                  title={active?.title ?? "Chưa chọn cuộc trò chuyện"}
+                >
                   {active?.title ?? "Chưa chọn cuộc trò chuyện"}
                 </div>
                 <div className="imRecipientStatus">
@@ -607,7 +737,7 @@ export function App() {
                 }
               >
                 <IconPhone size={12} style={{ marginRight: 4, verticalAlign: "middle" }} />
-                Thoại
+                <span className="imActionBtnLabel">Thoại</span>
               </button>
               <button
                 type="button"
@@ -619,7 +749,7 @@ export function App() {
                 }
               >
                 <IconVideo size={12} style={{ marginRight: 4, verticalAlign: "middle" }} />
-                Video
+                <span className="imActionBtnLabel">Video</span>
               </button>
               <button
                 type="button"
@@ -633,7 +763,7 @@ export function App() {
                 onClick={handleSendBuzz}
               >
                 <IconBuzz size={12} style={{ marginRight: 4, verticalAlign: "middle" }} />
-                {buzzCooldown > 0 ? `BUZZ (${buzzCooldown}s)` : "BUZZ!"}
+                <span className="imActionBtnLabel">{buzzCooldown > 0 ? `BUZZ (${buzzCooldown}s)` : "BUZZ!"}</span>
               </button>
             </div>
           </div>
@@ -648,6 +778,7 @@ export function App() {
             }
             onReplayAudible={handleReplayAudible}
             isTyping={isTyping}
+            lastReadSequence={lastReadSequence}
           />
 
           <MessageComposer
@@ -708,6 +839,13 @@ export function App() {
 
       {showAboutDialog && (
         <AboutDialog onClose={() => setShowAboutDialog(false)} />
+      )}
+
+      {showChangePasswordDialog && (
+        <ChangePasswordDialog
+          onSave={handleChangePassword}
+          onClose={() => setShowChangePasswordDialog(false)}
+        />
       )}
 
       <CallOverlay

@@ -61,7 +61,14 @@ export function DesktopMessageItem({
       ) : (
         <span className="messageBodyText">{renderWithYahooEmoticons(message.content)}</span>
       )}
-      <small className="messageSeq">#{message.sequence}</small>
+      <small className="messageSeq">
+        {mine && (
+          <span className="msgStatusSent" title="Đã gửi thành công">
+            <span className="sentCheckCircle">✓</span>
+          </span>
+        )}
+        #{message.sequence}
+      </small>
     </article>
   );
 }

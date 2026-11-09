@@ -5,6 +5,7 @@ namespace RetroMessenger.Contracts.Realtime;
 public interface IChatClient
 {
     Task MessageReceived(MessageDto message);
+    Task MessageRead(Guid conversationId, Guid readerId, long sequence, DateTimeOffset readAt);
     Task TypingChanged(Guid conversationId, Guid userId, bool isTyping);
     Task BuzzReceived(Guid conversationId, Guid senderId, DateTimeOffset sentAt);
     Task PresenceChanged(Guid userId, string status, string? customStatus, DateTimeOffset occurredAt);

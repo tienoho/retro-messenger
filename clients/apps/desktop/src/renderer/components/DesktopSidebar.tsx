@@ -143,10 +143,10 @@ export function DesktopSidebar({
               )
             }
           >
-            <option value="online">Trực tuyến (Available)</option>
-            <option value="away">Vắng mặt (Away)</option>
-            <option value="busy">Bận (Busy)</option>
-            <option value="invisible">Ẩn (Invisible)</option>
+            <option value="online">● Trực tuyến</option>
+            <option value="away">● Vắng mặt</option>
+            <option value="busy">● Bận</option>
+            <option value="invisible">○ Ẩn</option>
           </select>
         </div>
       </div>

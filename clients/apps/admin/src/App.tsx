@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState, type ChangeEvent } from "react";
+import { useCallback, useEffect, useMemo, useState, type ChangeEvent } from "react";
 import {
   Alert,
   Button,
@@ -46,6 +46,7 @@ export function App() {
     [],
   );
   const [authenticated, setAuthenticated] = useState(false);
+  const [restoringSession, setRestoringSession] = useState(true);
   const [authenticating, setAuthenticating] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
@@ -73,6 +74,26 @@ export function App() {
       setLoading(false);
     }
   }, [api]);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const restored = await api.restoreWebSession();
+        if (cancelled || !restored) return;
+        await loadAdminData();
+        setCurrentUserId(restored.user.id);
+        setAuthenticated(true);
+      } catch {
+        // Not logged in or not admin
+      } finally {
+        if (!cancelled) setRestoringSession(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [api, loadAdminData]);
 
   async function handleLogin(values: LoginValues): Promise<void> {
     setAuthenticating(true);
@@ -139,6 +160,14 @@ export function App() {
     } finally {
       setSavingAction(false);
     }
+  }
+
+  if (restoringSession) {
+    return (
+      <Layout style={{ minHeight: "100vh", display: "flex", placeItems: "center", justifyContent: "center", padding: 24 }}>
+        <Typography.Text type="secondary">Đang khôi phục phiên quản trị…</Typography.Text>
+      </Layout>
+    );
   }
 
   if (!authenticated) {

@@ -9,7 +9,7 @@ export interface WindowTitleBarProps {
 }
 
 export function WindowTitleBar({
-  title = "Retro! Messenger",
+  title = "Yahoo! Messenger",
   isOnline,
   soundEnabled = true,
   onToggleSound,
@@ -18,8 +18,8 @@ export function WindowTitleBar({
   return (
     <header className="retroWindowBar">
       <div className="retroWindowBrand">
-        <span className="badgeIcon">R!</span>
-        <span>{title}</span>
+        <span className="badgeIcon">Y!</span>
+        <span className="windowTitleText">{title}</span>
         {!isOnline && (
           <span style={{ fontSize: "10px", color: "#ffd700", marginLeft: 8 }}>
             (Đang ngoại tuyến)
